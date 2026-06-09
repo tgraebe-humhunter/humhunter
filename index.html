@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hum Hunter - Odsherred Støjdetektiv</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active-toggle { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.2); }
+    </style>
+</head>
+<body class="bg-slate-950 text-white font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-800 flex flex-col justify-between min-h-[600px]">
+        
+        <div id="screen-1" class="flex flex-col justify-between h-full space-y-6">
+            <div>
+                <h1 class="text-2xl font-black tracking-wider text-center text-red-500 mb-2">🕵️‍♂️ HUM HUNTER</h1>
+                <p class="text-xs text-slate-400 text-center uppercase tracking-widest font-semibold mb-6">Odsherred Støjdetektiv</p>
+                
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between">
+                    <span class="text-sm font-medium text-slate-400">📍 GPS Position:</span>
+                    <span id="gps-status" class="text-sm font-bold text-yellow-500 animate-pulse">Søger lokalitet...</span>
+                </div>
+
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Hvor måler du?</label>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button id="btn-indoor" type="button" onclick="setEnvironment('Indendørs')" class="active-toggle border-2 border-slate-700 rounded-2xl py-4 font-bold text-center transition-all">🏠 INDE</button>
+                    <button id="btn-outdoor" type="button" onclick="setEnvironment('Udendørs')" class="border-2 border-slate-700 rounded-2xl py-4 font-bold text-center transition-all">🌳 UDE</button>
+                </div>
+
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Hvilket udstyr bruger du?</label>
+                <div class="space-y-2 mb-6">
+                    <label class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-3 cursor-pointer">
+                        <input type="radio" name="equipment" value="Standard Mobil" checked class="w-4 h-4 text-red-500 bg-slate-900 border-slate-700">
+                        <span class="ml-3 text-sm">📱 Standard mobil-mikrofon</span>
+                    </label>
+                    <label class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-3 cursor-pointer">
+                        <input type="radio" name="equipment" value="Dayton iMM-6C" class="w-4 h-4 text-red-500 bg-slate-900 border-slate-700">
+                        <span class="ml-3 text-sm">🎙️ Dayton iMM-6C (Klasse 2 kalibreret)</span>
+                    </label>
+                </div>
+
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">⚠️ Sikker måling tjekliste</label>
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <label class="flex items-start text-xs text-slate-300">
+                        <input type="checkbox" id="check-silent" class="mt-0.5 rounded border-slate-700 bg-slate-900 text-red-500">
+                        <span class="ml-2">Her er stille (ingen biler, snak, TV eller støj i nærheden)</span>
+                    </label>
+                    <label class="flex items-start text-xs text-slate-300">
+                        <input type="checkbox" id="check-wind" class="mt-0.5 rounded border-slate-700 bg-slate-900 text-red-500">
+                        <span class="ml-2">Jeg bruger vindhætte (hvis jeg måler udendørs)</span>
+                    </label>
+                </div>
+            </div>
+
+            <button id="btn-start" onclick="startMeasurement()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-2xl text-lg uppercase tracking-wider transition-all shadow-lg shadow-red-900/30">
+                🔴 START 10 SEK MÅLING
+            </button>
+        </div>
+
+        <div id="screen-2" class="hidden flex flex-col justify-between h-full py-12 text-center">
+            <div class="space-y-6">
+                <h2 class="text-2xl font-black text-red-500 tracking-widest animate-pulse">🎧 OPTAGER LYD...</h2>
+                <div class="text-7xl font-black text-white py-6" id="countdown">10</div>
+                
+                <div class="flex items-center justify-center space-x-1 h-12">
+                    <div class="w-2 bg-red-500 rounded-full h-4 animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 bg-red-500 rounded-full h-10 animate-bounce" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 bg-red-500 rounded-full h-6 animate-bounce" style="animation-delay: 0.3s"></div>
+                    <div class="w-2 bg-red-500 rounded-full h-12 animate-bounce" style="animation-delay: 0.4s"></div>
+                    <div class="w-2 bg-red-500 rounded-full h-8 animate-bounce" style="animation-delay: 0.5s"></div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 mx-4">
+                <p class="text-sm font-bold text-yellow-500 mb-1">🤫 Schh... Stå helt stille!</p>
+                <p class="text-xs text-slate-400">Hold telefonen i strakt arm i ca. 1,5 meters højde for at undgå refleksioner fra din krop.</p>
+            </div>
+        </div>
+
+        <div id="screen-3" class="hidden flex flex-col justify-between h-full space-y-6">
+            <div>
+                <h2 class="text-2xl font-black text-center text-green-500 mb-6">🎉 MÅLING GENNEMFØRT</h2>
+                
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 mb-6">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">📍 Lokation gemt:</span>
+                        <span id="display-gps" class="font-mono text-slate-200">0.0, 0.0</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">📊 Filterprofil:</span>
+                        <span class="font-bold text-blue-400">RAW dBC/Z-vægtet</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">🎧 Lydfil status:</span>
+                        <span class="text-green-400 font-semibold">Klar til analyse</span>
+                    </div>
+                </div>
+
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tilføj kommentar (valgfrit)</label>
+                <textarea id="user-comment" placeholder="F.eks. 'Det ryster i radiatorerne lige nu' eller 'Brummen er ekstra slem i aften'..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm text-slate-200 focus:outline-none focus:border-green-500 h-28 resize-none"></textarea>
+            </div>
+
+            <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl text-lg uppercase tracking-wider transition-all shadow-lg shadow-green-900/30">
+                🚀 INDSEND TIL KORTET
+            </button>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Import Firebase modules via CDN
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+        // Din specifikke Firebase-konfiguration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRRN0JGUQ220ymjEfRLZhbqVzz1xMOMFA",
+            authDomain: "humhunter.firebaseapp.com",
+            projectId: "humhunter",
+            storageBucket: "humhunter.firebasestorage.app",
+            messagingSenderId: "586285630293",
+            appId: "1:586285630293:web:8e9f328c6ec42b50f865dc",
+            measurementId: "G-G0SKLLP35H"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // Global State Variables
+        let currentLatitude = null;
+        let currentLongitude = null;
+        let selectedEnvironment = 'Indendørs';
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // Triggers GPS immediately upon loading
+        window.addEventListener('load', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLatitude = position.coords.latitude;
+                        currentLongitude = position.coords.longitude;
+                        document.getElementById('gps-status').innerText = "Låst 🔒";
+                        document.getElementById('gps-status').className = "text-sm font-bold text-green-500";
+                    },
+                    (error) => {
+                        document.getElementById('gps-status').innerText = "Fejl / Tillad GPS ❌";
+                        document.getElementById('gps-status').className = "text-sm font-bold text-red-500";
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                document.getElementById('gps-status').innerText = "Ikke understøttet ❌";
+            }
+        });
+
+        // Toggle environment between Inside and Outside
+        window.setEnvironment = function(env) {
+            selectedEnvironment = env;
+            if (env === 'Indendørs') {
+                document.getElementById('btn-indoor').classList.add('active-toggle');
+                document.getElementById('btn-outdoor').classList.remove('active-toggle');
+            } else {
+                document.getElementById('btn-outdoor').classList.add('active-toggle');
+                document.getElementById('btn-indoor').classList.remove('active-toggle');
+            }
+        }
+
+        // Start the 10-second audio clip recording process
+        window.startMeasurement = async function() {
+            // Check validation
+            if (!currentLatitude || !currentLongitude) {
+                alert("Vent venligst på at din GPS-position er fundet.");
+                return;
+            }
+            if (!document.getElementById('check-silent').checked) {
+                alert("Du skal bekræfte tjeklisten før måling startes.");
+                return;
+            }
+
+            try {
+                // Request live microphone stream access
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    // Switch to Screen 3 when finished recording
+                    document.getElementById('screen-2').classList.add('hidden');
+                    document.getElementById('screen-3').classList.remove('hidden');
+                    document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
+                };
+
+                // Shift views to Screen 2
+                document.getElementById('screen-1').classList.add('hidden');
+                document.getElementById('screen-2').classList.remove('hidden');
+
+                // Fire up recorder and the countdown timer
+                mediaRecorder.start();
+                let timeLeft = 10;
+                const interval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('countdown').innerText = timeLeft;
+                    if (timeLeft <= 0) {
+                        clearInterval(interval);
+                        mediaRecorder.stop();
+                        // Turn off hardware mic stream indicators safely
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                }, 1000);
+
+            } catch (err) {
+                alert("Kunne ikke få adgang til mikrofonen. Tjek dine browserindstillinger.");
+                console.error(err);
+            }
+        }
+
+        // Send all collected structured data and audio blob up to Firebase
+        window.submitData = async function() {
+            const btnSubmit = document.getElementById('btn-submit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "⏳ SENDER DATA...";
+
+            try {
+                const timestamp = Date.now();
+                const filename = `hum_${timestamp}.webm`;
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                // 1. Send the file up to Firebase Storage
+                const storageRef = ref(storage, `audio_clips/${filename}`);
+                const snapshot = await uploadBytes(storageRef, audioBlob);
+                const fileUrl = await getDownloadURL(snapshot.ref);
+
+                // Get equipment choice from radios
+                const equipment = document.querySelector('input[name="equipment"]:checked').value;
+                const comment = document.getElementById('user-comment').value;
+
+                // 2. Put metadata into Firestore Database
+                await addDoc(collection(db, "measurements"), {
+                    timestamp: new Date(),
+                    latitude: currentLatitude,
+                    longitude: currentLongitude,
+                    environment: selectedEnvironment,
+                    equipment: equipment,
+                    comment: comment,
+                    audio_url: fileUrl
+                });
+
+                // Completed successfully state
+                alert("Måling modtaget! Tusind tak for dit bidrag til støj-jagten.");
+                window.location.reload();
+
+            } catch (error) {
+                alert("Der skete en fejl under indsendelsen. Prøv igen.");
+                console.error(error);
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "🚀 INDSEND TIL KORTET";
+            }
+        }
+    </script>
+</body>
+</html>
