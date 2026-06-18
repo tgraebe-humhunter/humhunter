@@ -14,22 +14,22 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         
-        /* Den nye fælles mørkeblå farve for alle bokse (som Måler/Kort-vælgeren) */
-        .theme-box { background-color: #0a1e2b; }
+        /* Den nye afslappede og ensartede blå farve til alle baggrunde */
+        .theme-box { background-color: #0B2F3D; }
         
-        /* Knap-farver for Inde/Ude */
+        /* Knap-farver for Inde/Ude (matcher nu måler/kortvælgeren 1:1) */
         .measure-active {
-            background-color: #3f2532 !important;
-            border: 2px solid #993a46 !important;
+            background-color: #176B87 !important;
+            color: #ffffff !important;
         }
         .measure-inactive {
             background-color: transparent !important;
-            border: 2px solid transparent !important;
+            color: rgba(255, 255, 255, 0.6) !important;
         }
 
         /* Leaflet popup styling alignment */
-        .leaflet-popup-content-wrapper { background: #0a1e2b !important; color: white !important; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .leaflet-popup-tip { background: #0a1e2b !important; }
+        .leaflet-popup-content-wrapper { background: #0B2F3D !important; color: white !important; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .leaflet-popup-tip { background: #0B2F3D !important; }
     </style>
 </head>
 <body class="text-white min-h-screen flex justify-center p-4">
@@ -38,16 +38,16 @@
     <div class="w-full max-w-md flex flex-col pb-8">
         
         <!-- Top App Navigation Tabs -->
-        <div class="grid grid-cols-2 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5">
-            <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all shadow-sm">🎙️ Måler</button>
+        <div class="grid grid-cols-2 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md">
+            <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all">🎙️ Måler</button>
             <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Live Kort</button>
         </div>
         
         <!-- ================= VIEW 1: MÅLER DASHBOARD ================= -->
         <div id="view-measure" class="flex flex-col h-full">
 
-            <!-- GPS Box (Nu med samme farve og formatering som top-tabs) -->
-            <div class="theme-box rounded-xl p-3 flex justify-between items-center mb-6 border border-white/5 shadow-md">
+            <!-- GPS Box -->
+            <div class="theme-box rounded-xl p-3.5 flex justify-between items-center mb-6 border border-white/5 shadow-md">
                 <div class="flex flex-col text-gray-400 pl-1">
                     <span class="text-[13px] uppercase tracking-widest font-semibold text-white/50 mb-0.5">📍 GPS</span>
                     <span class="font-semibold text-white">Position:</span>
@@ -57,74 +57,68 @@
                 </div>
             </div>
 
-            <!-- Environment Selection -->
+            <!-- Environment Selection (Nu med præcis samme p-1.5, gap-2 og størrelse som top-tabs) -->
             <div class="mb-6">
                 <h2 class="text-[20px] mb-2 font-normal">Hvor måler du?</h2>
-                <!-- Boksen har nu samme farve og p-1.5 padding som top-tabs -->
                 <div class="theme-box rounded-xl p-1.5 grid grid-cols-2 gap-2 shadow-md border border-white/5">
-                    <button id="btn-indoor" onclick="setEnvironment('Indendørs')" class="measure-active rounded-lg py-2.5 flex items-center justify-center space-x-2 transition-all">
-                        <span class="text-xl">🏠</span> <span class="font-bold tracking-wider">INDE</span>
+                    <button id="btn-indoor" onclick="setEnvironment('Indendørs')" class="measure-active rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold">
+                        <span class="text-xl">🏠</span> <span class="tracking-wider">Inde</span>
                     </button>
-                    <button id="btn-outdoor" onclick="setEnvironment('Udendørs')" class="measure-inactive text-white/60 hover:text-white rounded-lg py-2.5 flex items-center justify-center space-x-2 transition-all">
-                        <span class="text-xl">🌳</span> <span class="font-bold tracking-wider text-white">UDE</span>
+                    <button id="btn-outdoor" onclick="setEnvironment('Udendørs')" class="measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold">
+                        <span class="text-xl">🌳</span> <span class="tracking-wider">Ude</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Custom Equipment Selection (Tillader linjeskift!) -->
+            <!-- Custom Equipment Selection -->
             <div class="mb-6 relative" id="custom-select-wrapper">
                 <h2 class="text-[20px] mb-2 font-normal">Hvilket udstyr?</h2>
                 
-                <!-- Selve knappen -->
                 <div class="theme-box rounded-xl p-3.5 flex justify-between items-center cursor-pointer shadow-md border border-white/5" onclick="toggleDropdown()">
                     <div id="custom-select-text" class="leading-snug">
                         <span class="block font-semibold text-[17px]">📱 iPhone</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Nyere end 3 år)</span>
                     </div>
-                    <!-- Den flade SVG-pil ned -->
-                    <svg class="w-6 h-6 text-white/50 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <!-- Flad pil (Chevron) -->
+                    <svg class="w-5 h-5 text-white/50 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
 
                 <!-- Dropdown listen -->
                 <div id="custom-select-options" class="hidden absolute z-50 w-full mt-2 theme-box rounded-xl shadow-2xl max-h-[350px] overflow-y-auto border border-white/10 divide-y divide-white/5">
-                    
-                    <!-- Kategori 1: Smartphones -->
-                    <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/30 sticky top-0 backdrop-blur-md">Smartphones</div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('iPhone_Ny', '📱 iPhone', '(Nyere end 3 år)')">
+                    <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/20 sticky top-0 backdrop-blur-md">Smartphones</div>
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('iPhone_Ny', '📱 iPhone', '(Nyere end 3 år)')">
                         <span class="block font-semibold text-[16px]">📱 iPhone</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Nyere end 3 år)</span>
                     </div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('Android_Flagskib', '📱 Premium Android', '(Samsung S / Pixel < 3 år)')">
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('Android_Flagskib', '📱 Premium Android', '(Samsung S / Pixel < 3 år)')">
                         <span class="block font-semibold text-[16px]">📱 Premium Android</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Samsung S / Pixel < 3 år)</span>
                     </div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('Smartphone_Gammel', '📱 Smartphone', '(Ældre end 3 år / Budget)')">
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('Smartphone_Gammel', '📱 Smartphone', '(Ældre end 3 år / Budget)')">
                         <span class="block font-semibold text-[16px]">📱 Smartphone</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Ældre end 3 år / Budget)</span>
                     </div>
 
-                    <!-- Kategori 2: Målemikrofoner -->
-                    <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/30 sticky top-0 backdrop-blur-md">Målemikrofoner</div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('Dayton_iMM6', '🎙️ Dayton iMM-6', '(Klasse 2 kalibreret)')">
+                    <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/20 sticky top-0 backdrop-blur-md">Målemikrofoner</div>
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('Dayton_iMM6', '🎙️ Dayton iMM-6', '(Klasse 2 kalibreret)')">
                         <span class="block font-semibold text-[16px]">🎙️ Dayton iMM-6</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Klasse 2 kalibreret)</span>
                     </div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('MicW_i436', '🎙️ MicW i436', '(Klasse 2 iOS måler)')">
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('MicW_i436', '🎙️ MicW i436', '(Klasse 2 iOS måler)')">
                         <span class="block font-semibold text-[16px]">🎙️ MicW i436</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Klasse 2 iOS måler)</span>
                     </div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('MiniDSP_UMIK', '🎙️ MiniDSP UMIK', '(UMIK-1 / UMIK-2)')">
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('MiniDSP_UMIK', '🎙️ MiniDSP UMIK', '(UMIK-1 / UMIK-2)')">
                         <span class="block font-semibold text-[16px]">🎙️ MiniDSP UMIK</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(UMIK-1 / UMIK-2)</span>
                     </div>
 
-                    <!-- Kategori 3: Andet -->
-                    <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/30 sticky top-0 backdrop-blur-md">Andet udstyr</div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('Rode_VideoMic', '🎤 Røde VideoMic', '(Me-C / Me-L / GO)')">
+                    <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/20 sticky top-0 backdrop-blur-md">Andet udstyr</div>
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('Rode_VideoMic', '🎤 Røde VideoMic', '(Me-C / Me-L / GO)')">
                         <span class="block font-semibold text-[16px]">🎤 Røde VideoMic</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Me-C / Me-L / GO)</span>
                     </div>
-                    <div class="p-4 hover:bg-white/10 cursor-pointer transition-colors" onclick="selectOption('Andet', '❓ Andet / Ukendt', '(Eksternt udstyr)')">
+                    <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('Andet', '❓ Andet / Ukendt', '(Eksternt udstyr)')">
                         <span class="block font-semibold text-[16px]">❓ Andet / Ukendt</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Eksternt udstyr)</span>
                     </div>
@@ -148,7 +142,7 @@
                 </button>
             </div>
 
-            <!-- Title and Version (Flyttet til bunden) -->
+            <!-- Title and Version -->
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
                 <div class="text-[13px] font-medium mt-1">Version 1.0</div>
@@ -229,13 +223,12 @@
         let currentLatitude = null;
         let currentLongitude = null;
         let selectedEnvironment = 'Indendørs';
-        let selectedEquipment = 'iPhone_Ny'; // Standardvalg for vores custom dropdown
+        let selectedEquipment = 'iPhone_Ny';
         let mediaRecorder = null;
         let audioChunks = [];
         let map = null;
         let markersGroup = [];
 
-        // Tab Switcher Controller
         window.switchView = function(viewName) {
             if (viewName === 'measure') {
                 document.getElementById('view-measure').classList.remove('hidden');
@@ -251,7 +244,6 @@
             }
         }
 
-        // Custom Dropdown Logic
         window.toggleDropdown = function() {
             document.getElementById('custom-select-options').classList.toggle('hidden');
         }
@@ -265,7 +257,6 @@
             document.getElementById('custom-select-options').classList.add('hidden');
         }
 
-        // Luk dropdown hvis man klikker ved siden af den
         document.addEventListener('click', function(event) {
             const wrapper = document.getElementById('custom-select-wrapper');
             const options = document.getElementById('custom-select-options');
@@ -319,11 +310,11 @@
         window.setEnvironment = function(env) {
             selectedEnvironment = env;
             if (env === 'Indendørs') {
-                document.getElementById('btn-indoor').className = "measure-active rounded-lg py-2.5 flex items-center justify-center space-x-2 transition-all";
-                document.getElementById('btn-outdoor').className = "measure-inactive text-white/60 hover:text-white rounded-lg py-2.5 flex items-center justify-center space-x-2 transition-all";
+                document.getElementById('btn-indoor').className = "measure-active rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold";
+                document.getElementById('btn-outdoor').className = "measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold";
             } else {
-                document.getElementById('btn-outdoor').className = "measure-active rounded-lg py-2.5 flex items-center justify-center space-x-2 transition-all";
-                document.getElementById('btn-indoor').className = "measure-inactive text-white/60 hover:text-white rounded-lg py-2.5 flex items-center justify-center space-x-2 transition-all";
+                document.getElementById('btn-outdoor').className = "measure-active rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold";
+                document.getElementById('btn-indoor').className = "measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold";
             }
         }
 
@@ -372,7 +363,7 @@
                     latitude: currentLatitude,
                     longitude: currentLongitude,
                     environment: selectedEnvironment,
-                    equipment: selectedEquipment, // Her henter vi nu værdien fra vores nye custom dropdown
+                    equipment: selectedEquipment,
                     comment: comment,
                     audio_url: fileUrl
                 });
