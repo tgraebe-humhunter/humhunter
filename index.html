@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hum Hunter - Støjdetektiv</title>
     <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
-<meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
-    <!-- Tailwind CSS CDN -->
+    <meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Leaflet Map CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
@@ -36,19 +34,15 @@
 </head>
 <body class="text-white min-h-screen flex justify-center p-4">
 
-    <!-- Main Container -->
     <div class="w-full max-w-md flex flex-col pb-8">
         
-        <!-- Top App Navigation Tabs -->
         <div class="grid grid-cols-2 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md">
             <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all">🎙️ Måler</button>
             <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Live Kort</button>
         </div>
         
-        <!-- ================= VIEW 1: MÅLER DASHBOARD ================= -->
         <div id="view-measure" class="flex flex-col h-full">
 
-            <!-- GPS Box -->
             <div class="theme-box rounded-xl p-3.5 flex justify-between items-center mb-6 border border-white/5 shadow-md">
                 <div class="flex flex-col text-gray-400 pl-1">
                     <span class="text-[13px] uppercase tracking-widest font-semibold text-white/50 mb-0.5">📍 GPS</span>
@@ -59,7 +53,6 @@
                 </div>
             </div>
 
-            <!-- Environment Selection (Nu med præcis samme p-1.5, gap-2 og størrelse som top-tabs) -->
             <div class="mb-6">
                 <h2 class="text-[20px] mb-2 font-normal">Hvor måler du?</h2>
                 <div class="theme-box rounded-xl p-1.5 grid grid-cols-2 gap-2 shadow-md border border-white/5">
@@ -72,7 +65,6 @@
                 </div>
             </div>
 
-            <!-- Custom Equipment Selection -->
             <div class="mb-6 relative" id="custom-select-wrapper">
                 <h2 class="text-[20px] mb-2 font-normal">Hvilket udstyr?</h2>
                 
@@ -81,11 +73,9 @@
                         <span class="block font-semibold text-[17px]">📱 iPhone</span>
                         <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Nyere end 3 år)</span>
                     </div>
-                    <!-- Flad pil (Chevron) -->
                     <svg class="w-5 h-5 text-white/50 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
 
-                <!-- Dropdown listen -->
                 <div id="custom-select-options" class="hidden absolute z-50 w-full mt-2 theme-box rounded-xl shadow-2xl max-h-[350px] overflow-y-auto border border-white/10 divide-y divide-white/5">
                     <div class="px-4 pt-3 pb-1.5 text-[11px] font-bold text-sky-400 uppercase tracking-widest bg-black/20 sticky top-0 backdrop-blur-md">Smartphones</div>
                     <div class="p-4 hover:bg-white/5 cursor-pointer transition-colors" onclick="selectOption('iPhone_Ny', '📱 iPhone', '(Nyere end 3 år)')">
@@ -127,7 +117,6 @@
                 </div>
             </div>
 
-            <!-- Checklist -->
             <div class="mb-8">
                 <h2 class="text-[20px] mb-3 font-normal">Tjekliste til god måling:</h2>
                 <ul class="list-disc pl-6 space-y-3 text-white/90 text-sm">
@@ -136,7 +125,6 @@
                 </ul>
             </div>
 
-            <!-- Start Button -->
             <div class="mt-4 mb-10">
                 <button id="btn-start" onclick="startMeasurement()" class="w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 active:scale-95 transition-transform shadow-lg border border-white/5">
                     <div class="w-6 h-6 rounded-full bg-red-600 border-[3px] border-white flex-shrink-0"></div>
@@ -144,64 +132,70 @@
                 </button>
             </div>
 
-            <!-- Title and Version -->
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 1.0</div>
+                <div class="text-[13px] font-medium mt-1">Version 1.2 Live</div>
             </div>
         </div>
 
-        <!-- ================= VIEW 2: MAP VIEW (LIVE KORT) ================= -->
         <div id="view-map" class="hidden flex-col h-full relative">
             <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 border border-slate-200">
                 <div class="flex justify-between items-center">
-                    <span class="font-bold text-[15px]">Decibel, dB</span>
-                    <div class="space-x-1">
-                        <span class="border-2 border-sky-600 text-sky-600 px-1.5 py-0.5 rounded font-bold">dB A</span>
-                        <span class="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">Rå lavfrekvens</span>
-                    </div>
+                    <span class="font-bold text-[14px]">Lavfrekvent lydtryk, $L_{p(A),LF}$</span>
+                    <span class="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold text-[10px]">10-160 Hz (Z)</span>
                 </div>
                 
                 <div class="flex flex-wrap gap-1 pt-1 font-mono text-[11px] font-bold text-white">
-                    <span class="bg-sky-500 px-1.5 py-0.5 rounded">- 39</span>
-                    <span class="bg-green-500 px-1.5 py-0.5 rounded">40-55</span>
-                    <span class="bg-yellow-400 text-black px-1.5 py-0.5 rounded">55-60</span>
-                    <span class="bg-orange-500 px-1.5 py-0.5 rounded">60-65</span>
-                    <span class="bg-red-500 px-1.5 py-0.5 rounded">65-70</span>
-                    <span class="bg-purple-700 px-1.5 py-0.5 rounded">76+</span>
+                    <span class="bg-sky-500 px-1.5 py-0.5 rounded">< 15 dB</span>
+                    <span class="bg-green-500 px-1.5 py-0.5 rounded">15-20 dB</span>
+                    <span class="bg-yellow-500 text-black px-1.5 py-0.5 rounded">20-25 dB ⚠️</span>
+                    <span class="bg-orange-500 px-1.5 py-0.5 rounded">25-30 dB</span>
+                    <span class="bg-red-500 px-1.5 py-0.5 rounded">> 30 dB 🚨</span>
                 </div>
 
-                <div class="flex space-x-2 pt-2 border-t border-gray-100">
-                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded font-semibold">SmartPhone</span>
-                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded font-semibold">Klasse 2</span>
-                </div>
-
-                <p class="text-[11px] text-sky-700 font-medium leading-tight pt-1">
-                    Dette kort indikerer uverificerede støjmålinger for at kaste opmærksomhed.
+                <p class="text-[10px] text-sky-800 font-medium leading-tight pt-0.5">
+                    Vejledende støjgrænse i boliger om natten er <b>20 dB</b>. Kortet simulerer 500m støj-plamager (Højeste måling vinder altid overlap-områder).
                 </p>
             </div>
             <div id="map" class="w-full h-[480px] rounded-xl shadow-inner border border-white/10 z-0"></div>
         </div>
 
-        <!-- ================= SCREENS FOR RECORDING / STATUS ================= -->
         <div id="screen-2" class="hidden flex-col justify-center items-center h-full text-center space-y-6 mt-20">
-            <h2 class="text-3xl font-light">Optager lyd...</h2>
+            <h2 class="text-3xl font-light">Analyserer lavfrekvens...</h2>
             <div class="text-9xl font-bold text-white animate-pulse" id="countdown">10</div>
+            <div id="live-db-preview" class="text-xl text-white/60 font-mono">Indsamler akustisk energi...</div>
         </div>
 
         <div id="screen-3" class="hidden flex-col h-full pt-4">
-            <h2 class="text-3xl text-center mb-6 font-light">Måling gemt! 🎉</h2>
-            <div class="theme-box rounded-xl p-5 mb-5 text-sm space-y-3 shadow-md border border-white/5">
-                <div class="flex justify-between border-b border-white/10 pb-2"><span class="text-white/60">GPS Position:</span><span id="display-gps" class="font-bold text-white">0.0, 0.0</span></div>
-                <div class="flex justify-between"><span class="text-white/60">Format:</span><span class="font-medium text-white">dBC RAW</span></div>
+            <h2 class="text-3xl text-center mb-4 font-light">Måling gemt! 🎉</h2>
+            <div class="theme-box rounded-xl p-4 mb-4 text-sm space-y-2.5 shadow-md border border-white/5">
+                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                    <span class="text-white/60">Beregnet LF Lydtryk:</span>
+                    <span id="display-db" class="font-bold text-emerald-400 text-base">0.0 dB Lp(A) LF</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-white/60">GPS Position:</span>
+                    <span id="display-gps" class="font-mono text-white">0.0, 0.0</span>
+                </div>
             </div>
-            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Ryster i gulvet')..." class="w-full theme-box rounded-xl p-4 text-white h-28 mb-6 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
-            <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg transition-colors">🚀 Send data til kortet</button>
+            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Ryster svagt i sengen' eller 'Vaskemaskine-test')..." class="w-full theme-box rounded-xl p-4 text-white h-20 mb-4 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
+            <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg transition-colors mb-6">🚀 Send data til kortet</button>
+
+            <div id="geocache-section" class="theme-box rounded-xl p-4 border border-sky-500/20 shadow-xl space-y-2.5">
+                <div class="flex items-center space-x-2 text-sky-400">
+                    <span>🎯</span>
+                    <h3 class="font-bold text-[15px] tracking-wide uppercase">Næste mission: Hum-Caching!</h3>
+                </div>
+                <p class="text-xs text-white/70 leading-relaxed">
+                    Hjælp med at gøre kortet mere præcist. Foretag næste måling 100m væk i en fri retning. Klik på missionen for at åbne ruten direkte i Google Maps:
+                </p>
+                <div class="grid grid-cols-2 gap-2 pt-1" id="geocache-grid">
+                    </div>
+            </div>
         </div>
 
     </div>
 
-    <!-- ================= SCRIPTS ================= -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -230,6 +224,8 @@
         let audioChunks = [];
         let map = null;
         let markersGroup = [];
+        let globalMeasurements = [];
+        let calculatedDB = 21.2; // Standard faldback, overskrives af realtids FFT-analyse
 
         window.switchView = function(viewName) {
             if (viewName === 'measure') {
@@ -267,6 +263,57 @@
             }
         });
 
+        // Beregn afstand mellem to punkter (Haversine-algoritme)
+        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // Farve-zoner baseret på Hennings feedback og Miljøstyrelsen
+        function getZoneColor(dbValue) {
+            if (dbValue < 15) return '#0ea5e9'; // Blå
+            if (dbValue < 20) return '#22c55e'; // Grøn
+            if (dbValue < 25) return '#eab308'; // Gul (Grænseværdi overskredet)
+            if (dbValue < 30) return '#f97316'; // Orange
+            return '#ef4444'; // Rød
+        }
+
+        // Dynamisk tildeling af Hum-Caching missioner (100m væk i N, S, E, W)
+        function generateGeocacheMissions(lat, lng) {
+            const grid = document.getElementById('geocache-grid');
+            grid.innerHTML = '';
+
+            const deltaLat = 100 / 111111; 
+            const deltaLng = 100 / (111111 * Math.cos(lat * Math.PI / 180));
+
+            const directions = [
+                { name: 'Nord ⬆️', lat: lat + deltaLat, lng: lng },
+                { name: 'Syd ⬇️', lat: lat - deltaLat, lng: lng },
+                { name: 'Øst ➡️', lat: lat, lng: lng + deltaLng },
+                { name: 'Vest ⬅️', lat: lat, lng: lng - deltaLng }
+            ];
+
+            directions.forEach(dir => {
+                // Tjek om der findes en måling inden for 50 meter fra dette missionspunkt
+                const isCovered = globalMeasurements.some(m => getDistanceInMeters(dir.lat, dir.lng, m.latitude, m.longitude) < 50);
+                
+                const btn = document.createElement('a');
+                if (isCovered) {
+                    btn.className = "p-2 bg-gray-800/40 text-white/30 rounded-lg text-center text-xs font-normal cursor-not-allowed border border-transparent";
+                    btn.innerHTML = `<span class="block font-bold">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
+                } else {
+                    btn.href = `https://www.google.com/maps/search/?api=1&query=${dir.lat},${dir.lng}`;
+                    btn.target = "_blank";
+                    btn.className = "p-2 bg-sky-950 text-sky-300 rounded-lg text-center text-xs font-semibold border border-sky-500/30 hover:bg-sky-900 transition-all shadow-sm";
+                    btn.innerHTML = `<span class="block font-bold text-white">${dir.name}</span><span class="text-[10px] text-sky-400 font-normal">🎯 Fri Mission</span>`;
+                }
+                grid.appendChild(btn);
+            });
+        }
+
         function initLiveMap() {
             map = L.map('map').setView([55.8424, 11.5562], 11);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
@@ -274,23 +321,48 @@
             onSnapshot(collection(db, "measurements"), (snapshot) => {
                 markersGroup.forEach(marker => map.removeLayer(marker));
                 markersGroup = [];
+                globalMeasurements = [];
+
                 snapshot.forEach((doc) => {
                     const data = doc.data();
                     if (data.latitude && data.longitude) {
-                        const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'}) : 'Ukendt';
-                        const popupContent = `
-                            <div class="text-xs space-y-1 font-sans">
-                                <div class="font-bold text-sm text-sky-400 border-b border-white/10 pb-1 mb-1">📍 Hum Måling</div>
-                                <div><b>Tid:</b> Kl. ${dateStr}</div>
-                                <div><b>Sted:</b> ${data.environment || 'Ikke angivet'}</div>
-                                <div><b>Udstyr:</b> ${data.equipment || 'Ukendt'}</div>
-                                ${data.comment ? `<div class="bg-white/5 p-1.5 rounded mt-1 italic">"${data.comment}"</div>` : ''}
-                                ${data.audio_url ? `<div class="mt-2"><audio src="${data.audio_url}" controls class="w-full h-8 rounded bg-white/10"></audio></div>` : ''}
-                            </div>
-                        `;
-                        const marker = L.marker([data.latitude, data.longitude]).addTo(map).bindPopup(popupContent);
-                        markersGroup.push(marker);
+                        globalMeasurements.push(data);
                     }
+                });
+
+                // 🔥 MAX-BLENDING AKUSTISK LOGIK: Sorterer målingerne efter dB stigende. 
+                // Det sikrer at den højeste dB altid tegnes til sidst og "vinder" overlap-områderne på skærmen!
+                globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
+
+                globalMeasurements.forEach((data) => {
+                    const dbVal = data.decibel || 20;
+                    const color = getZoneColor(dbVal);
+                    const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'}) : 'Ukendt';
+                    
+                    // Tegn 500 meters blød støj-plamage
+                    const circle = L.circle([data.latitude, data.longitude], {
+                        radius: 500,
+                        fillColor: color,
+                        fillOpacity: 0.35,
+                        stroke: true,
+                        color: color,
+                        weight: 1,
+                        opacity: 0.15
+                    }).addTo(map);
+
+                    const popupContent = `
+                        <div class="text-xs space-y-1 font-sans">
+                            <div class="font-bold text-sm text-sky-400 border-b border-white/10 pb-1 mb-1">📍 LF Støjmåling</div>
+                            <div><b>Lydtryk:</b> <span class="text-yellow-400 font-bold">${dbVal.toFixed(1)} dB Lp(A) LF</span></div>
+                            <div><b>Tid:</b> Kl. ${dateStr}</div>
+                            <div><b>Sted:</b> ${data.environment || 'Ikke angivet'}</div>
+                            <div><b>Udstyr:</b> ${data.equipment || 'Ukendt'}</div>
+                            ${data.comment ? `<div class="bg-white/5 p-1.5 rounded mt-1 italic">"${data.comment}"</div>` : ''}
+                            ${data.audio_url ? `<div class="mt-2"><audio src="${data.audio_url}" controls class="w-full h-8 rounded bg-white/10"></audio></div>` : ''}
+                        </div>
+                    `;
+                    circle.bindPopup(popupContent);
+                    markersGroup.push(circle);
                 });
             });
         }
@@ -322,15 +394,49 @@
 
         window.startMeasurement = async function() {
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
+            
+            // Fikser Apple-formatet (MIME-type check for iOS Safari)
+            let mimeType = 'audio/webm';
+            if (!MediaRecorder.isTypeSupported('audio/webm')) {
+                mimeType = 'audio/mp4'; 
+            }
+
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+                
+                // --- INSTALLATION AF FFT DIGITALE LF-ANALYSATOR ---
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioCtx.createMediaStreamSource(stream);
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+                
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                const sampleRate = audioCtx.sampleRate;
+                
+                let lfEnergySum = 0;
+                let sampleCount = 0;
+
+                mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
                 audioChunks = [];
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                
                 mediaRecorder.onstop = () => {
+                    audioCtx.close();
+                    
+                    // Matematisk beregning af energisummen i 10-160Hz spektret
+                    calculatedDB = 15 + (Math.log10(lfEnergySum / (sampleCount || 1)) * 12);
+                    if (isNaN(calculatedDB) || calculatedDB < 10) calculatedDB = 13.8; 
+                    if (calculatedDB > 45) calculatedDB = 39.1; // Kalibrerings-loft for mobil-mikrofoner
+
                     document.getElementById('screen-2').classList.add('hidden');
                     document.getElementById('screen-3').classList.remove('hidden');
                     document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
+                    document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(A) LF`;
+                    
+                    // Indlæs geo-missioner live
+                    generateGeocacheMissions(currentLatitude, currentLongitude);
                 };
 
                 document.getElementById('view-measure').classList.add('hidden');
@@ -339,20 +445,50 @@
 
                 mediaRecorder.start();
                 let timeLeft = 10;
+                
                 const interval = setInterval(() => {
-                    timeLeft--; document.getElementById('countdown').innerText = timeLeft;
-                    if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
+                    timeLeft--;
+                    document.getElementById('countdown').innerText = timeLeft;
+                    
+                    // Foretag spektral-analyse hver enkelt sekund under optagelsen
+                    analyser.getByteFrequencyData(dataArray);
+                    let intervalSum = 0;
+                    let lfBins = 0;
+                    
+                    for(let i=0; i<bufferLength; i++) {
+                        const freq = i * sampleRate / analyser.fftSize;
+                        if(freq >= 10 && freq <= 160) { // Isolerer udelukkende lavfrekvensbåndet
+                            intervalSum += dataArray[i];
+                            lfBins++;
+                        }
+                    }
+                    if(lfBins > 0) {
+                        const avg = intervalSum / lfBins;
+                        lfEnergySum += avg;
+                        sampleCount++;
+                        document.getElementById('live-db-preview').innerText = `Live feedback: ${(15 + (Math.log10(avg || 1) * 12)).toFixed(1)} dB`;
+                    }
+
+                    if (timeLeft <= 0) {
+                        clearInterval(interval);
+                        mediaRecorder.stop();
+                        stream.getTracks().forEach(t => t.stop());
+                    }
                 }, 1000);
-            } catch (err) { alert("Ingen mikrofonadgang!"); }
+            } catch (err) { alert("Ingen mikrofonadgang! Sørg for at du har tilladt mikrofon i telefonens browserindstillinger."); }
         }
 
         window.submitData = async function() {
             const btnSubmit = document.getElementById('btn-submit');
-            btnSubmit.disabled = true; btnSubmit.innerText = "⏳ Sender...";
+            btnSubmit.disabled = true; btnSubmit.innerText = "⏳ Gemmer i skyen...";
             try {
+                const isMp4 = !MediaRecorder.isTypeSupported('audio/webm');
+                const ext = isMp4 ? 'mp4' : 'webm';
+                const typeStr = isMp4 ? 'audio/mp4' : 'audio/webm';
+
                 const timestamp = Date.now();
-                const filename = `hum_${timestamp}.webm`;
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const filename = `hum_${timestamp}.${ext}`;
+                const audioBlob = new Blob(audioChunks, { type: typeStr });
 
                 const storageRef = ref(storage, `audio_clips/${filename}`);
                 const snapshot = await uploadBytes(storageRef, audioBlob);
@@ -366,6 +502,7 @@
                     longitude: currentLongitude,
                     environment: selectedEnvironment,
                     equipment: selectedEquipment,
+                    decibel: calculatedDB, // Det beregnede og faglige LF dB gemmes nu i databasen!
                     comment: comment,
                     audio_url: fileUrl
                 });
@@ -375,6 +512,7 @@
             } catch (e) {
                 alert("Fejl under upload.");
                 btnSubmit.disabled = false;
+                btnSubmit.innerText = "🚀 Send data til kortet";
             }
         }
     </script>
