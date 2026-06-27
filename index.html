@@ -14,10 +14,10 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         
-        /* Din originale, mørkeblå mockup-farve til alle baggrunde */
+        /* Din mørkeblå mockup-farve til alle baggrunde */
         .theme-box { background-color: #0B2F3D; }
         
-        /* Knap-farver for Inde/Ude (matcher nu måler/kortvælgeren 1:1) */
+        /* Knap-farver for Inde/Ude (matcher måler/kortvælgeren 1:1) */
         .measure-active {
             background-color: #176B87 !important;
             color: #ffffff !important;
@@ -124,7 +124,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 1.4 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 1.6 Live</div>
             </div>
         </div>
 
@@ -141,9 +141,9 @@
                 </div>
                 
                 <div class="flex flex-wrap gap-1 pt-1 font-mono text-[10px] font-bold text-white">
-                    <span class="bg-[#0284c7] px-1 py-0.5 rounded">&lt; 5 dB</span>
-                    <span class="bg-[#0ea5e9] px-1 py-0.5 rounded">5-10 dB</span>
-                    <span class="bg-[#38bdf8] text-slate-900 px-1 py-0.5 rounded">10-15 dB</span>
+                    <span class="bg-[#0c4a6e] px-1 py-0.5 rounded">&lt; 13 dB</span>
+                    <span class="bg-[#0ea5e9] px-1 py-0.5 rounded">13-13.6 dB</span>
+                    <span class="bg-[#38bdf8] text-slate-900 px-1 py-0.5 rounded">13.6-15 dB</span>
                     <span class="bg-green-500 px-1 py-0.5 rounded">15-20 dB</span>
                     <span class="bg-yellow-400 text-black px-1 py-0.5 rounded">20-25 dB ⚠️</span>
                     <span class="bg-orange-500 px-1 py-0.5 rounded">25-30 dB</span>
@@ -156,7 +156,7 @@
 
             <div id="info-popover" class="hidden absolute top-[150px] left-0 w-full p-4 theme-box text-white rounded-xl shadow-2xl z-20 border border-white/10 space-y-3">
                 <div class="flex justify-between items-center border-b border-white/10 pb-2">
-                    <h4 class="font-bold text-[16px] tracking-wide uppercase">Målemetode v1.4</h4>
+                    <h4 class="font-bold text-[16px] tracking-wide uppercase">Målemetode v1.6</h4>
                     <button id="info-close" class="text-white/60 focus:outline-none">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l18 18"></path></svg>
                     </button>
@@ -248,7 +248,8 @@
         let globalMeasurements = [];
         let calculatedDB = 22.1;
 
-        window.switchView = function(viewName) {
+        // Modul-sikrede og eksponerede funktioner
+        function switchView(viewName) {
             if (viewName === 'measure') {
                 document.getElementById('view-measure').classList.remove('hidden');
                 document.getElementById('view-map').classList.add('hidden');
@@ -263,11 +264,11 @@
             }
         }
 
-        window.toggleDropdown = function() {
+        function toggleDropdown() {
             document.getElementById('custom-select-options').classList.toggle('hidden');
         }
 
-        window.selectOption = function(value, mainText, subText) {
+        function selectOption(value, mainText, subText) {
             selectedEquipment = value;
             document.getElementById('custom-select-text').innerHTML = `
                 <span class="block font-semibold text-[17px]">${mainText}</span>
@@ -280,8 +281,7 @@
             localStorage.setItem('humhunter_eq_sub', subText);
         }
 
-        // On-demand dataeksport-funktion knyttet til den nye knap
-        window.exportRawData = function() {
+        function exportRawData() {
             const btn = document.getElementById('btn-export');
             if (globalMeasurements.length === 0) {
                 alert("Ingen data indlæst endnu. Vent et øjeblik.");
@@ -300,121 +300,7 @@
             }
         }
 
-        document.addEventListener('click', function(event) {
-            const wrapper = document.getElementById('custom-select-wrapper');
-            const options = document.getElementById('custom-select-options');
-            if (wrapper && !wrapper.contains(event.target)) {
-                options.classList.add('hidden');
-            }
-        });
-
-        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        // Opgraderet og finjusteret farveskala for mikro-støjzoner under 15 dB
-        function getZoneColor(dbValue) {
-            if (dbValue < 5) return '#0284c7';   // Ultatyst mørkeblå
-            if (dbValue < 10) return '#0ea5e9';  // Mellemblå
-            if (dbValue < 15) return '#38bdf8';  // Meget lys cyan-blå
-            if (dbValue < 20) return '#22c55e';  // Grøn (Normal baggrund)
-            if (dbValue < 25) return '#eab308';  // Gul (Grænseværdi tangeret)
-            if (dbValue < 30) return '#f97316';  // Orange
-            return '#ef4444';                    // Rød (Kraftig brummen)
-        }
-
-        function generateGeocacheMissions(lat, lng) {
-            const grid = document.getElementById('geocache-grid');
-            grid.innerHTML = '';
-
-            const deltaLat = 500 / 111111; 
-            const deltaLng = 500 / (111111 * Math.cos(lat * Math.PI / 180));
-
-            const directions = [
-                { name: 'Nord ⬆️', lat: lat + deltaLat, lng: lng },
-                { name: 'Syd ⬇️', lat: lat - deltaLat, lng: lng },
-                { name: 'Øst ➡️', lat: lat, lng: lng + deltaLng },
-                { name: 'Vest ⬅️', lat: lat, lng: lng - deltaLng }
-            ];
-
-            directions.forEach(dir => {
-                const isCovered = globalMeasurements.some(m => getDistanceInMeters(dir.lat, dir.lng, m.latitude, m.longitude) < 250);
-                
-                const btn = document.createElement('button');
-                if (isCovered) {
-                    btn.className = "p-2.5 bg-gray-800/40 text-white/30 rounded-lg text-center text-xs font-normal cursor-not-allowed border border-transparent";
-                    btn.innerHTML = `<span class="block font-bold">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
-                } else {
-                    btn.onclick = () => submitAndGoToMission(dir.lat, dir.lng);
-                    btn.className = "p-2.5 bg-sky-950 text-sky-300 rounded-lg text-center text-xs font-semibold border border-sky-500/30 hover:bg-sky-900 transition-all shadow-sm";
-                    btn.innerHTML = `<span class="block font-bold text-white">${dir.name}</span><span class="text-[10px] text-sky-400 font-normal">🎯 Fri Zone</span>`;
-                }
-                grid.appendChild(btn);
-            });
-        }
-
-        function initLiveMap() {
-            map = L.map('map').setView([55.8424, 11.5562], 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-
-            const infoIcon = document.getElementById('info-icon');
-            const infoClose = document.getElementById('info-close');
-            const infoPopover = document.getElementById('info-popover');
-
-            infoIcon.addEventListener('click', () => infoPopover.classList.toggle('hidden'));
-            infoClose.addEventListener('click', () => infoPopover.classList.add('hidden'));
-
-            onSnapshot(collection(db, "measurements"), (snapshot) => {
-                markersGroup.forEach(marker => map.removeLayer(marker));
-                markersGroup = [];
-                globalMeasurements = [];
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.latitude && data.longitude) {
-                        globalMeasurements.push(data);
-                    }
-                });
-
-                globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
-
-                globalMeasurements.forEach((data) => {
-                    const dbVal = data.decibel || 20;
-                    const color = getZoneColor(dbVal);
-                    const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'}) : 'Ukendt';
-                    
-                    const circle = L.circle([data.latitude, data.longitude], {
-                        radius: 500,
-                        fillColor: color,
-                        fillOpacity: 0.35,
-                        stroke: true,
-                        color: color,
-                        weight: 1,
-                        opacity: 0.15
-                    }).addTo(map);
-
-                    const popupContent = `
-                        <div class="text-xs space-y-1 font-sans">
-                            <div class="font-bold text-sm text-sky-400 border-b border-white/10 pb-1 mb-1">📍 Hum Måling</div>
-                            <div><b>Hum Lydtryk:</b> <span class="text-yellow-400 font-bold">${dbVal.toFixed(1)} dB Lp(Z)</span></div>
-                            <div><b>Tid:</b> Kl. ${dateStr}</div>
-                            <div><b>Sted:</b> ${data.environment || 'Ikke angivet'}</div>
-                            <div><b>Udstyr:</b> ${data.equipment || 'Ukendt'}</div>
-                            ${data.comment ? `<div class="bg-white/5 p-1.5 rounded mt-1 italic">"${data.comment}"</div>` : ''}
-                            ${data.audio_url ? `<div class="mt-2"><audio src="${data.audio_url}" controls class="w-full h-8 rounded bg-white/10"></audio></div>` : ''}
-                        </div>
-                    `;
-                    circle.bindPopup(popupContent);
-                    markersGroup.push(circle);
-                });
-            });
-        }
-
-        window.setEnvironment = function(env) {
+        function setEnvironment(env) {
             selectedEnvironment = env;
             localStorage.setItem('humhunter_environment', env); 
             
@@ -427,154 +313,28 @@
             }
         }
 
-        window.startMeasurement = async function() {
-            if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
-            
-            let mimeType = 'audio/webm';
-            if (!MediaRecorder.isTypeSupported('audio/webm')) {
-                mimeType = 'audio/mp4'; 
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioCtx.createMediaStreamSource(stream);
-                const analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048;
-                source.connect(analyser);
-                
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                const sampleRate = audioCtx.sampleRate;
-                
-                let lfEnergySum = 0;
-                let sampleCount = 0;
-
-                mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
-                audioChunks = [];
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                
-                mediaRecorder.onstop = () => {
-                    audioCtx.close();
-                    
-                    calculatedDB = 15 + (Math.log10(lfEnergySum / (sampleCount || 1)) * 12);
-                    if (isNaN(calculatedDB) || calculatedDB < 10) calculatedDB = 13.5; 
-                    if (calculatedDB > 45) calculatedDB = 39.4;
-
-                    document.getElementById('screen-2').classList.add('hidden');
-                    document.getElementById('screen-3').classList.remove('hidden');
-                    document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
-                    document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
-                    
-                    generateGeocacheMissions(currentLatitude, currentLongitude);
-                };
-
-                document.getElementById('view-measure').classList.add('hidden');
-                document.getElementById('screen-2').classList.remove('hidden');
-                document.getElementById('screen-2').classList.add('flex');
-
-                mediaRecorder.start();
-                let timeLeft = 10;
-                
-                const interval = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('countdown').innerText = timeLeft;
-                    
-                    analyser.getByteFrequencyData(dataArray);
-                    let intervalSum = 0;
-                    let lfBins = 0;
-                    
-                    for(let i=0; i<bufferLength; i++) {
-                        const freq = i * sampleRate / analyser.fftSize;
-                        if(freq >= 0 && freq <= 50) {
-                            intervalSum += dataArray[i];
-                            lfBins++;
-                        }
-                    }
-                    if(lfBins > 0) {
-                        const avg = intervalSum / lfBins;
-                        lfEnergySum += avg;
-                        sampleCount++;
-                        document.getElementById('live-db-preview').innerText = `${(15 + (Math.log10(avg || 1) * 12)).toFixed(1)} dB Lp(Z)`;
-                    }
-
-                    if (timeLeft <= 0) {
-                        clearInterval(interval);
-                        mediaRecorder.stop();
-                        stream.getTracks().forEach(t => t.stop());
-                    }
-                }, 1000);
-            } catch (err) { alert("Ingen mikrofonadgang! Sørg for at du har tilladt mikrofon i telefonens browserindstillinger."); }
+        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        async function _performDataSubmit() {
-            const isMp4 = !MediaRecorder.isTypeSupported('audio/webm');
-            const ext = isMp4 ? 'mp4' : 'webm';
-            const typeStr = isMp4 ? 'audio/mp4' : 'audio/webm';
-
-            const timestamp = Date.now();
-            const filename = `hum_${timestamp}.${ext}`;
-            const audioBlob = new Blob(audioChunks, { type: typeStr });
-
-            const storageRef = ref(storage, `audio_clips/${filename}`);
-            const snapshot = await uploadBytes(storageRef, audioBlob);
-            const fileUrl = await getDownloadURL(snapshot.ref);
-
-            const comment = document.getElementById('user-comment').value;
-
-            await addDoc(collection(db, "measurements"), {
-                timestamp: new Date(),
-                latitude: currentLatitude,
-                longitude: currentLongitude,
-                environment: selectedEnvironment,
-                equipment: selectedEquipment,
-                decibel: calculatedDB,
-                comment: comment,
-                audio_url: fileUrl
-            });
+        // Version 1.6: Opgraderet og finjusteret farveskala for mikro-støjzoner omkring støjgulvet (13.5 dB)
+        function getZoneColor(dbValue) {
+            if (dbValue < 13.0) return '#0c4a6e';  // Ultatyst / Digitalt nul (Mørk natteblå)
+            if (dbValue <= 13.6) return '#0ea5e9'; // Det reelle støjgulv i Odsherred (Klassisk havblå)
+            if (dbValue <= 15.0) return '#38bdf8'; // Svag mikro-aktivitet (Lys cyan-blå)
+            if (dbValue < 20) return '#22c55e';    // Grøn (Normal baggrund)
+            if (dbValue < 25) return '#eab308';    // Gul (Grænseværdi tangeret)
+            if (dbValue < 30) return '#f97316';    // Orange
+            return '#ef4444';                      // Rød (Kraftig brummen)
         }
 
-        window.submitData = async function() {
-            const btnSubmit = document.getElementById('btn-submit');
-            btnSubmit.disabled = true; 
-            btnSubmit.className = "w-full bg-blue-600 rounded-xl py-4 text-xl font-bold shadow-lg transition-all";
-            btnSubmit.innerText = "⏳ Gemmer cloud-data...";
-            try {
-                await _performDataSubmit();
-                btnSubmit.className = "w-full bg-emerald-600 rounded-xl py-4 text-xl font-bold shadow-lg transition-all";
-                btnSubmit.innerText = "✅ Målingen er gemt!";
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } catch (e) {
-                alert("Fejl under upload.");
-                btnSubmit.disabled = false;
-                btnSubmit.className = "w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg transition-all mb-6";
-                btnSubmit.innerText = "🚀 Send data til kortet";
-            }
-        }
+        function generateGeocacheMissions(lat, lng) {
+            const grid = document.getElementById('geocache-grid');
+            grid.innerHTML = '';
 
-        window.submitAndGoToMission = async function(missionLat, missionLng) {
-            const btnSubmit = document.getElementById('btn-submit');
-            btnSubmit.disabled = true;
-            btnSubmit.className = "w-full bg-blue-600 rounded-xl py-4 text-xl font-bold shadow-lg transition-all";
-            btnSubmit.innerText = "⏳ Gemmer og åbner rute...";
-            try {
-                await _performDataSubmit();
-                btnSubmit.className = "w-full bg-emerald-600 rounded-xl py-4 text-xl font-bold shadow-lg transition-all";
-                btnSubmit.innerText = "✅ Målingen er gemt!";
-                setTimeout(() => {
-                    window.open(`https://maps.google.com/?q=${missionLat},${missionLng}`, '_blank');
-                    window.location.reload();
-                }, 1500);
-            } catch (e) {
-                alert("Fejl under lagring før mission.");
-                btnSubmit.disabled = false;
-                btnSubmit.className = "w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg transition-all mb-6";
-                btnSubmit.innerText = "🚀 Send data til kortet";
-            }
-        }
-    </script>
-</body>
-</html>
+            const deltaLat = 500 / 111111; 
+            const deltaLng = 500 / (11
