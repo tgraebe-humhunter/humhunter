@@ -129,7 +129,7 @@
         </div>
 
         <div id="view-map" class="hidden flex-col h-full relative">
-            <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 border border-slate-200">
+            <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 merge-box border border-slate-200">
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-[14px]">Hum-Frekvens Lydtryk, L_p(Z)</span>
                     <div class="flex items-center space-x-1">
@@ -140,12 +140,14 @@
                     </div>
                 </div>
                 
-                <div class="flex flex-wrap gap-1 pt-1 font-mono text-[11px] font-bold text-white">
-                    <span class="bg-sky-500 px-1.5 py-0.5 rounded">< 15 dB</span>
-                    <span class="bg-green-500 px-1.5 py-0.5 rounded">15-20 dB</span>
-                    <span class="bg-yellow-400 text-black px-1.5 py-0.5 rounded">20-25 dB ⚠️</span>
-                    <span class="bg-orange-500 px-1.5 py-0.5 rounded">25-30 dB</span>
-                    <span class="bg-red-500 px-1.5 py-0.5 rounded">> 30 dB 🚨</span>
+                <div class="flex flex-wrap gap-1 pt-1 font-mono text-[10px] font-bold text-white">
+                    <span class="bg-[#0284c7] px-1 py-0.5 rounded">&lt; 5 dB</span>
+                    <span class="bg-[#0ea5e9] px-1 py-0.5 rounded">5-10 dB</span>
+                    <span class="bg-[#38bdf8] text-slate-900 px-1 py-0.5 rounded">10-15 dB</span>
+                    <span class="bg-green-500 px-1 py-0.5 rounded">15-20 dB</span>
+                    <span class="bg-yellow-400 text-black px-1 py-0.5 rounded">20-25 dB ⚠️</span>
+                    <span class="bg-orange-500 px-1 py-0.5 rounded">25-30 dB</span>
+                    <span class="bg-red-500 px-1 py-0.5 rounded">&gt; 30 dB 🚨</span>
                 </div>
                 <p class="text-[10px] text-sky-800 font-medium leading-tight pt-0.5">
                     Målrettet 0-50 Hz lavfrekvent summelyd. Kortet viser 500m støj-plamager (Højeste måling vinder overlap).
@@ -168,6 +170,12 @@
             </div>
 
             <div id="map" class="w-full h-[480px] rounded-xl shadow-inner border border-white/10 z-0"></div>
+            
+            <div class="mt-4">
+                <button id="btn-export" onclick="exportRawData()" class="w-full theme-box border border-white/10 hover:bg-sky-900 rounded-xl py-3 text-sm font-semibold tracking-wide text-sky-400 flex items-center justify-center space-x-2 transition-all active:scale-95">
+                    <span>📋 Kopier rådata til Gemini</span>
+                </button>
+            </div>
         </div>
 
         <div id="screen-2" class="hidden flex-col justify-center items-center h-full text-center space-y-8 mt-16 px-4">
@@ -203,7 +211,7 @@
                     Hjælp med at lukke hullerne i kortet. Foretag næste måling på kanten af denne zone (<b>500 meter væk</b>). Klik for at gemme nuværende måling og åbne ruten i Google Maps:
                 </p>
                 <div class="grid grid-cols-2 gap-2 pt-1" id="geocache-grid">
-                    </div>
+                </div>
             </div>
         </div>
 
@@ -231,7 +239,7 @@
 
         let currentLatitude = null;
         let currentLongitude = null;
-        let selectedEnvironment = 'Udendørs'; // Flow 1: Sat til Udendørs som standard default
+        let selectedEnvironment = 'Udendørs'; 
         let selectedEquipment = 'iPhone_Ny';
         let mediaRecorder = null;
         let audioChunks = [];
@@ -272,6 +280,26 @@
             localStorage.setItem('humhunter_eq_sub', subText);
         }
 
+        // On-demand dataeksport-funktion knyttet til den nye knap
+        window.exportRawData = function() {
+            const btn = document.getElementById('btn-export');
+            if (globalMeasurements.length === 0) {
+                alert("Ingen data indlæst endnu. Vent et øjeblik.");
+                return;
+            }
+            try {
+                const dataString = JSON.stringify(globalMeasurements, null, 2);
+                navigator.clipboard.writeText(dataString).then(() => {
+                    btn.innerHTML = `<span class="text-emerald-400">✅ Kopieret til udklipsholder!</span>`;
+                    setTimeout(() => {
+                        btn.innerHTML = `<span>📋 Kopier rådata til Gemini</span>`;
+                    }, 2500);
+                });
+            } catch (err) {
+                alert("Fejl under kopiering. Prøv igen.");
+            }
+        }
+
         document.addEventListener('click', function(event) {
             const wrapper = document.getElementById('custom-select-wrapper');
             const options = document.getElementById('custom-select-options');
@@ -288,12 +316,15 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // Opgraderet og finjusteret farveskala for mikro-støjzoner under 15 dB
         function getZoneColor(dbValue) {
-            if (dbValue < 15) return '#0ea5e9';
-            if (dbValue < 20) return '#22c55e';
-            if (dbValue < 25) return '#eab308';
-            if (dbValue < 30) return '#f97316';
-            return '#ef4444';
+            if (dbValue < 5) return '#0284c7';   // Ultatyst mørkeblå
+            if (dbValue < 10) return '#0ea5e9';  // Mellemblå
+            if (dbValue < 15) return '#38bdf8';  // Meget lys cyan-blå
+            if (dbValue < 20) return '#22c55e';  // Grøn (Normal baggrund)
+            if (dbValue < 25) return '#eab308';  // Gul (Grænseværdi tangeret)
+            if (dbValue < 30) return '#f97316';  // Orange
+            return '#ef4444';                    // Rød (Kraftig brummen)
         }
 
         function generateGeocacheMissions(lat, lng) {
@@ -383,42 +414,9 @@
             });
         }
 
-        window.addEventListener('load', () => {
-            // 💾 STICKY ENVIRONMENT SETUP (Flow 1)
-            const savedEnv = localStorage.getItem('humhunter_environment');
-            if (savedEnv) {
-                setEnvironment(savedEnv);
-            } else {
-                setEnvironment('Udendørs'); // Default hvis ingen historik findes
-            }
-
-            const savedEq = localStorage.getItem('humhunter_equipment');
-            if (savedEq) {
-                selectedEquipment = savedEq;
-                const main = localStorage.getItem('humhunter_eq_main');
-                const sub = localStorage.getItem('humhunter_eq_sub');
-                document.getElementById('custom-select-text').innerHTML = `
-                    <span class="block font-semibold text-[17px]">${main}</span>
-                    <span class="block text-[13px] text-white/60 font-normal mt-0.5">${sub}</span>
-                `;
-            }
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        currentLatitude = pos.coords.latitude; currentLongitude = pos.coords.longitude;
-                        document.getElementById('gps-status').innerHTML = "Signal låst 🟢";
-                        document.getElementById('gps-status').className = "text-green-400 font-bold text-[15px]";
-                    },
-                    (err) => { document.getElementById('gps-status').innerHTML = "Fejl / Tillad GPS ❌"; },
-                    { enableHighAccuracy: true }
-                );
-            }
-        });
-
         window.setEnvironment = function(env) {
             selectedEnvironment = env;
-            localStorage.setItem('humhunter_environment', env); // Gør valget sticky
+            localStorage.setItem('humhunter_environment', env); 
             
             if (env === 'Indendørs') {
                 document.getElementById('btn-indoor').className = "measure-active rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold";
@@ -467,7 +465,7 @@
                     document.getElementById('screen-2').classList.add('hidden');
                     document.getElementById('screen-3').classList.remove('hidden');
                     document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
-                    document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z) LF`;
+                    document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     
                     generateGeocacheMissions(currentLatitude, currentLongitude);
                 };
@@ -489,7 +487,6 @@
                     
                     for(let i=0; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
-                        // Flow 2: Præcis analyse isoleret til 0-50 Hz
                         if(freq >= 0 && freq <= 50) {
                             intervalSum += dataArray[i];
                             lfBins++;
@@ -538,7 +535,6 @@
             });
         }
 
-        // Flow 5: Fjernet alert popup. Viser i stedet inline succes i 1.5 sekunder og reloader
         window.submitData = async function() {
             const btnSubmit = document.getElementById('btn-submit');
             btnSubmit.disabled = true; 
@@ -559,7 +555,6 @@
             }
         }
 
-        // Flow 5: Gemmer måling lydløst før eksternt link åbnes
         window.submitAndGoToMission = async function(missionLat, missionLng) {
             const btnSubmit = document.getElementById('btn-submit');
             btnSubmit.disabled = true;
@@ -570,7 +565,7 @@
                 btnSubmit.className = "w-full bg-emerald-600 rounded-xl py-4 text-xl font-bold shadow-lg transition-all";
                 btnSubmit.innerText = "✅ Målingen er gemt!";
                 setTimeout(() => {
-                    window.open(`https://www.google.com/maps/search/?api=1&query=${missionLat},${missionLng}`, '_blank');
+                    window.open(`https://maps.google.com/?q=${missionLat},${missionLng}`, '_blank');
                     window.location.reload();
                 }, 1500);
             } catch (e) {
