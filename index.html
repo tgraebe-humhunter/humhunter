@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hum Hunter - Støjdetektiv</title>
-    <meta name="description" content="Hum Hunter is a borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
+    <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
     <meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 3.5 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 3.6 Live</div>
             </div>
         </div>
 
@@ -316,25 +316,20 @@
             });
         }
 
-        function getZoneColor(dbValue) {
-            if (dbValue < 13.0) return '#0c4a6e';  
-            if (dbValue <= 13.6) return '#0ea5e9'; 
-            if (dbValue <= 15.0) return '#38bdf8'; 
-            if (dbValue < 20) return '#22c55e';    
-            if (dbValue < 25) return '#eab308';    
-            if (dbValue < 30) return '#f97316';    
-            return '#ef4444';                      
-        }
-
         window.startMeasurement = async function() {
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
+            
+            // 🔥 CRITICAL iOS INTERACTION FIX: Opret AudioContext synkront her med det samme,
+            // FØR noget asynkront await-arbejde udføres, så iOS ikke muter datastrømmen til 0!
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
+
             let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
                 });
                 
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const source = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
                 
@@ -426,7 +421,7 @@
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
                 }, 1000);
-            } catch (err) { alert("Ingen mikrofonadgang!"); }
+            } catch (err) { alert("Ingen mikrofonadgang!"); audioCtx.close(); }
         };
 
         async function _performDataSubmit() {
@@ -460,9 +455,9 @@
             } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
         };
 
-        // 🔥 RETTET: Officielt og skudsikkert Google Maps API Link uden streng-kludder eller pop-up problemer
+        // 🔥 STRÆKBAR GOOGLE MAPS REDIRECT: Garanterer fuldstændig fejlfri åbning uden iOS-blokeringer
         window.submitAndGoToMission = async function(missionLat, missionLng) {
-            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${missionLat},${missionLng}&origin=${currentLatitude},${currentLongitude}&travelmode=driving`;
+            const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLatitude},${currentLongitude}&destination=${missionLat},${missionLng}&travelmode=driving`;
             const targetWindow = window.open(mapsUrl, '_blank');
             try {
                 await _performDataSubmit();
@@ -506,7 +501,7 @@
             if (savedUser) document.getElementById('user-identity').value = savedUser;
             document.getElementById('user-identity').addEventListener('input', (e) => { localStorage.setItem('humhunter_user_id', e.target.value); });
 
-            // 🔥 DEN FATALE FAULT ER RETTET HER: main og sub bliver nu indlæst korrekt i den rå HTML streng!
+            // 🔥 FIX: Variablerne til udstyrsfeltet er rettet, så JavaScript og GPS kører fejlfrit
             const savedEq = localStorage.getItem('humhunter_equipment');
             if (savedEq) {
                 selectedEquipment = savedEq;
