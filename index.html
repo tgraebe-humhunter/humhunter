@@ -39,7 +39,7 @@
 
             <div class="theme-box rounded-xl p-3.5 mb-4 border border-white/5 shadow-md">
                 <label class="block text-[12px] uppercase tracking-widest font-bold text-sky-400 mb-1.5">👤 Måler Identifikation (Gemmes automatisk)</label>
-                <input id="user-identity" type="text" placeholder="Indtast deine initialer eller navn..." class="w-full bg-black/30 text-white rounded-lg p-2.5 text-sm focus:outline-none border border-white/10 placeholder:text-white/30 font-medium">
+                <input id="user-identity" type="text" placeholder="Indtast dine initialer eller navn..." class="w-full bg-black/30 text-white rounded-lg p-2.5 text-sm focus:outline-none border border-white/10 placeholder:text-white/30 font-medium">
             </div>
 
             <div class="theme-box rounded-xl p-3.5 flex justify-between items-center mb-6 border border-white/5 shadow-md">
@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 2.5 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 2.6 Live</div>
             </div>
         </div>
 
@@ -110,16 +110,16 @@
             <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 merge-box border border-slate-200">
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-[14px]">Hum-Frekvens Lydtryk, L_p(Z)</span>
-                    <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold text-[10px]">0-50 Hz Isoleret</span>
+                    <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold text-[10px]">20-50 Hz Isoleret</span>
                 </div>
                 <div class="flex flex-wrap gap-1 pt-1 font-mono text-[10px] font-bold text-white">
-                    <span class="bg-[#0c4a6e] px-1 py-0.5 rounded">&lt; 13 dB</span>
+                    <span class="bg-[#0c4a6e] px-1 py-0.5 rounded">< 13 dB</span>
                     <span class="bg-[#0ea5e9] px-1 py-0.5 rounded">13-13.6 dB</span>
                     <span class="bg-[#38bdf8] text-slate-900 px-1 py-0.5 rounded">13.6-15 dB</span>
                     <span class="bg-green-500 px-1 py-0.5 rounded">15-20 dB</span>
                     <span class="bg-yellow-400 text-black px-1 py-0.5 rounded">20-25 dB ⚠️</span>
                     <span class="bg-orange-500 px-1 py-0.5 rounded">25-30 dB</span>
-                    <span class="bg-red-500 px-1 py-0.5 rounded">&gt; 30 dB 🚨</span>
+                    <span class="bg-red-500 px-1 py-0.5 rounded">> 30 dB 🚨</span>
                 </div>
             </div>
 
@@ -141,7 +141,7 @@
         </div>
 
         <div id="screen-2" class="hidden flex-col justify-center items-center h-full text-center space-y-8 mt-16 px-4">
-            <h2 class="text-[22px] font-normal leading-relaxed text-white/90">Tak for dit bidrag til målingerne.<br><span class="text-sky-300 font-medium">Lytter efter 0-50Hz lavfrekvent summelyd...</span></h2>
+            <h2 class="text-[22px] font-normal leading-relaxed text-white/90">Tak for dit bidrag til målingerne.<br><span class="text-sky-300 font-medium">Lytter efter 20-50Hz lavfrekvent summelyd...</span></h2>
             <div class="text-9xl font-bold text-white animate-pulse my-4" id="countdown">10</div>
             <div id="live-db-preview" class="text-3xl font-bold text-emerald-400 font-mono tracking-wide bg-black/30 px-6 py-3 rounded-xl border border-white/5">0.0 dB Lp(Z)</div>
         </div>
@@ -162,6 +162,7 @@
                 </div>
             </div>
 
+            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-24 mb-5 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
             <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-24 mb-5 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
             <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg flex items-center justify-center space-x-2">
                 <span>🚀 Send data til kortet</span>
@@ -291,7 +292,6 @@
                     btn.className = "p-2.5 bg-gray-800/40 text-white/30 rounded-lg text-center text-xs font-normal cursor-not-allowed border border-transparent";
                     btn.innerHTML = `<span class="block font-bold">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
                 } else {
-                    // 🔥 SKUDSIKKER POP-UP SIKRING: trigger window.open øjeblikkeligt synkront her i stedet for efter cloud-gem
                     btn.onclick = () => window.submitAndGoToMission(dir.lat, dir.lng);
                     btn.className = "p-2.5 bg-sky-950 text-sky-300 rounded-lg text-center text-xs font-semibold border border-sky-500/30 hover:bg-sky-900 transition-all shadow-sm";
                     btn.innerHTML = `<span class="block font-bold text-white">${dir.name}</span><span class="text-[10px] text-sky-400 font-normal">🎯 Fri Zone</span>`;
@@ -339,7 +339,6 @@
                 globalMeasurements = [];
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    // 🔥 SKUDSIKKER REDNINGSLINJE: Forhindrer kortet i at crashe hvis et gammelt dokument mangler GPS
                     if (data.latitude && data.longitude) { globalMeasurements.push(data); }
                 });
                 globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
@@ -357,7 +356,6 @@
                 const source = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
                 
-                // 🔥 SIKRER 2.9 Hz OPPLØSNING I STEDET FOR 23.4 Hz
                 analyser.fftSize = 16384; 
                 source.connect(analyser);
                 
@@ -365,7 +363,6 @@
                 const dataArray = new Uint8Array(bufferLength);
                 const sampleRate = audioCtx.sampleRate;
                 
-                // Sikrede nulstillinger
                 let lfEnergySum = 0, sampleCount = 0, maxIntensityInWindow = -1;
                 globalPeakFreq = 0; 
 
@@ -385,8 +382,7 @@
                     document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     
-                    // Skriver resultatet fejlfrit ud
-                    document.getElementById('display-peak').innerText = globalPeakFreq > 0 ? Math.round(globalPeakFreq) + ' Hz' : 'Ingen brummen fundet';
+                    document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? Math.round(globalPeakFreq) + ' Hz' : 'Ingen brummen fundet';
                     
                     await fetchLiveWeather(currentLatitude, currentLongitude);
                 };
@@ -401,10 +397,10 @@
                     analyser.getByteFrequencyData(dataArray);
                     let intervalSum = 0, lfBins = 0, intervalMaxVal = -1, intervalMaxFreq = 0;
                     
-                    // 🔥 SCANNER FRA i=1 FOR AT IGNORERE STATISK DC-STØJ (0 Hz)
                     for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
-                        if(freq > 0 && freq <= 50) { 
+                        // 🔥 HARD AF-SKÆRING: Lytter nu KUN til det hørbare lavfrekvens-område (20-50 Hz)
+                        if(freq >= 20 && freq <= 50) { 
                             intervalSum += dataArray[i]; lfBins++; 
                             if (dataArray[i] > intervalMaxVal) {
                                 intervalMaxVal = dataArray[i];
@@ -436,7 +432,7 @@
             await addDoc(collection(db, "measurements"), {
                 timestamp: new Date(), latitude: currentLatitude, longitude: currentLongitude,
                 environment: selectedEnvironment, equipment: selectedEquipment, decibel: calculatedDB,
-                peak_frequency: globalPeakFreq > 0 ? Math.round(globalPeakFreq) : 0,
+                peak_frequency: globalPeakFreq >= 20 ? Math.round(globalPeakFreq) : 0,
                 user_id: document.getElementById('user-identity').value || "Anonym",
                 comment: document.getElementById('user-comment').value, audio_url: fileUrl,
                 weather: { temperature: currentTemp || 0, wind_speed: currentWindSpeed || 0, wind_direction: currentWindDir || 0 }
@@ -455,9 +451,9 @@
             } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
         };
 
-        // 🔥 POP-UP REDNING: Åbner det nye vindue med det samme synkront for at omgå browser-spærren!
+        // 🔥 RETTET: Skudsikker og krystalklar Google Maps URL uden strenge-kludder eller pop-up blokeringer
         window.submitAndGoToMission = async function(missionLat, missionLng) {
-            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${missionLat},${missionLng}&origin=${currentLatitude},${currentLongitude}`;
+            const mapsUrl = "https://www.google.com/maps/dir/?api=1&destination=" + missionLat + "," + missionLng + "&origin=" + currentLatitude + "," + currentLongitude;
             const targetWindow = window.open(mapsUrl, '_blank');
             try {
                 await _performDataSubmit();
@@ -484,7 +480,6 @@
                 }, err => {}, { enableHighAccuracy: true });
             }
             
-            // Første data-stream
             onSnapshot(collection(db, "measurements"), (snapshot) => {
                 globalMeasurements = [];
                 snapshot.forEach(doc => {
