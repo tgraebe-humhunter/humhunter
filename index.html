@@ -38,7 +38,7 @@
         <div id="view-measure" class="flex flex-col h-full">
 
             <div class="mb-6">
-                <label class="block text-[15px] font-normal text-white/90 mb-2">Hvem er du (valgfrit)</label>
+                <h2 class="text-[20px] mb-2 font-normal">Hvem er du? (valgfrit)</h2>
                 <input id="user-identity" type="text" placeholder="Indtast dit navn eller email..." class="w-full theme-box text-white rounded-xl p-4 text-sm focus:outline-none border border-white/5 placeholder:text-white/30 font-medium shadow-md">
             </div>
 
@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 3.1 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 3.2 Live</div>
             </div>
         </div>
 
@@ -164,4 +164,171 @@
 
             <div id="debug-panel" class="theme-box rounded-xl p-4 mb-4 border border-sky-500/30 text-xs space-y-2 shadow-inner">
                 <h4 class="font-bold text-sky-400 uppercase tracking-wider flex items-center space-x-1"><span>🔬 Diagnostik: Top 5 Frekvenser (20-60 Hz)</span></h4>
-                <div id="debug-peaks-list" class="font-mono
+                <div id="debug-peaks-list" class="font-mono space-y-1 text-white/80 divide-y divide-white/5 pt-1">
+                    <div class="py-1">Afventer måledata...</div>
+                </div>
+            </div>
+
+            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-22 mb-4 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
+            
+            <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg flex items-center justify-center space-x-2">
+                <span>🚀 Send data til kortet</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRRN0JGUQ220ymjEfRLZhbqVzz1xMOMFA",
+            authDomain: "humhunter.firebaseapp.com",
+            projectId: "humhunter",
+            storageBucket: "humhunter.firebasestorage.app",
+            messagingSenderId: "586285630293",
+            appId: "1:586285630293:web:8e9f328c6ec42b50f865dc",
+            measurementId: "G-G0SKLLP35H"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentLatitude = null, currentLongitude = null, selectedEnvironment = 'Udendørs', selectedEquipment = 'iPhone_Ny';
+        let mediaRecorder = null, audioChunks = [], map = null, markersGroup = [], globalMeasurements = [];
+        let calculatedDB = 22.1, currentMapFilter = 'Alle';
+        let globalPeakFreq = 0;
+        let currentTemp = null, currentWindSpeed = null, currentWindDir = null;
+        let globalTopPeaksArray = [];
+
+        async function fetchLiveWeather(lat, lng) {
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m`);
+                const data = await res.json();
+                if (data && data.current) {
+                    currentTemp = data.current.temperature_2m;
+                    currentWindSpeed = data.current.wind_speed_10m;
+                    currentWindDir = data.current.wind_direction_10m;
+                }
+            } catch (err) { console.error("Vejr-fejl:", err); }
+        }
+
+        window.switchView = function(viewName) {
+            if (viewName === 'measure') {
+                document.getElementById('view-measure').classList.remove('hidden');
+                document.getElementById('view-map').classList.add('hidden');
+            } else {
+                document.getElementById('view-measure').classList.add('hidden');
+                document.getElementById('view-map').classList.remove('hidden');
+                if (!map) initLiveMap();
+            }
+        };
+
+        window.toggleDropdown = function() { document.getElementById('custom-select-options').classList.toggle('hidden'); };
+
+        window.selectOption = function(value, mainText, subText) {
+            selectedEquipment = value;
+            document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px]">${mainText}</span><span class="block text-[13px] text-white/60 font-normal mt-0.5">${subText}</span>`;
+            document.getElementById('custom-select-options').classList.add('hidden');
+            localStorage.setItem('humhunter_equipment', value);
+            localStorage.setItem('humhunter_eq_main', mainText);
+            localStorage.setItem('humhunter_eq_sub', subText);
+        };
+
+        window.setEnvironment = function(env) {
+            selectedEnvironment = env;
+            localStorage.setItem('humhunter_environment', env); 
+            if (env === 'Indendørs') {
+                document.getElementById('btn-indoor').className = "measure-active rounded-lg py-2 flex items-center justify-center space-x-2 font-bold";
+                document.getElementById('btn-outdoor').className = "measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 font-bold";
+            } else {
+                document.getElementById('btn-outdoor').className = "measure-active rounded-lg py-2 flex items-center justify-center space-x-2 font-bold";
+                document.getElementById('btn-indoor').className = "measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 font-bold";
+            }
+        };
+
+        window.setMapFilter = function(filter) {
+            currentMapFilter = filter;
+            document.getElementById('filter-all').className = filter === 'Alle' ? "measure-active rounded-lg py-1.5 transition-all" : "measure-inactive rounded-lg py-1.5 transition-all";
+            document.getElementById('filter-outdoor').className = filter === 'Udendørs' ? "measure-active rounded-lg py-1.5 transition-all" : "measure-inactive rounded-lg py-1.5 transition-all";
+            document.getElementById('filter-indoor').className = filter === 'Indendørs' ? "measure-active rounded-lg py-1.5 transition-all" : "measure-inactive rounded-lg py-1.5 transition-all";
+            if (map) updateMapMarkers();
+        };
+
+        window.exportRawData = function() {
+            if (globalMeasurements.length === 0) return;
+            try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalMeasurements, null, 2));
+                const dl = document.createElement('a');
+                dl.setAttribute("href", dataStr);
+                dl.setAttribute("download", "humhunter_dataset.json");
+                document.body.appendChild(dl); dl.click(); dl.remove();
+            } catch (err) { alert("Fejl under generering af JSON."); }
+        };
+
+        function updateMapMarkers() {
+            markersGroup.forEach(m => map.removeLayer(m));
+            markersGroup = [];
+            const filteredData = globalMeasurements.filter(d => currentMapFilter === 'Alle' || d.environment === currentMapFilter);
+
+            filteredData.forEach((data) => {
+                const dbVal = data.decibel || 20;
+                const color = getZoneColor(dbVal);
+                
+                const circle = L.circle([data.latitude, data.longitude], { radius: 500, fillColor: color, fillOpacity: 0.12, stroke: false }).addTo(map);
+                const centerDot = L.circleMarker([data.latitude, data.longitude], { radius: 7, fillColor: color, fillOpacity: 1.0, color: '#ffffff', weight: 1.5, opacity: 1.0 }).addTo(map);
+
+                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'}) : 'Ukendt';
+                const weatherInfo = data.weather ? `<div class="border-t border-white/10 pt-1 mt-1 text-[11px] text-white/60">💨 <b>Vind:</b> ${data.weather.wind_speed} km/t (${data.weather.wind_direction}°)<br>🌡️ <b>Temp:</b> ${data.weather.temperature} °C</div>` : '';
+
+                const popupContent = `
+                    <div class="text-xs space-y-1 font-sans">
+                        <div class="font-bold text-sm text-sky-400 border-b border-white/10 pb-1 mb-1">📍 Hum Måling</div>
+                        <div><b>Måler:</b> <span class="text-sky-200 font-bold">${data.user_id || 'Anonym'}</span></div>
+                        <div><b>Hum Lydtryk:</b> <span class="text-yellow-400 font-bold">${dbVal.toFixed(1)} dB Lp(Z)</span></div>
+                        <div><b>Topfrekvens:</b> <span class="text-emerald-400 font-bold">${data.peak_frequency ? data.peak_frequency + ' Hz' : 'Ukendt'}</span></div>
+                        <div><b>Sted:</b> ${data.environment || 'Udendørs'} (${dateStr})</div>
+                        ${weatherInfo}
+                        ${data.comment ? `<div class="bg-white/5 p-1.5 rounded mt-1 italic">"${data.comment}"</div>` : ''}
+                    </div>`;
+                
+                centerDot.bindPopup(popupContent); circle.bindPopup(popupContent);
+                markersGroup.push(circle); markersGroup.push(centerDot);
+            });
+        }
+
+        function initLiveMap() {
+            map = L.map('map').setView([55.8424, 11.5562], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            onSnapshot(collection(db, "measurements"), (snapshot) => {
+                globalMeasurements = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.latitude && data.longitude) { globalMeasurements.push(data); }
+                });
+                globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
+                updateMapMarkers();
+                if(currentLatitude && currentLongitude) generateGeocacheMissions(currentLatitude, currentLongitude);
+            });
+        }
+
+        function getZoneColor(dbValue) {
+            if (dbValue < 13.0) return '#0c4a6e';  
+            if (dbValue <= 13.6) return '#0ea5e9'; 
+            if (dbValue <= 15.0) return '#38bdf8'; 
+            if (dbValue < 20) return '#22c55e';    
+            if (dbValue < 25) return '#eab308';    
+            if (dbValue < 30) return '#f97316';    
+            return '#ef4444';                      
+        }
+
+        window.startMeasurement = async function() {
+            if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
+            let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
