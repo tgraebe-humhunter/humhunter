@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 2.7 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 2.8 Live</div>
             </div>
         </div>
 
@@ -351,13 +351,8 @@
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
             let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
             try {
-                // 🔥 SIKRING AF RÅ LYD: Slår alle undertrykkelsesfiltre fra i browseren, så dybe toner ikke slettes
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: false,
-                        noiseSuppression: false,
-                        autoGainControl: false
-                    } 
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
                 });
                 
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -371,6 +366,8 @@
                 const dataArray = new Uint8Array(bufferLength);
                 const sampleRate = audioCtx.sampleRate;
                 
+                // 🔥 NY SPEKTRUM-PULJE: Gemmer og akkumulerer energi over tid
+                let cumulativeSpectrum = new Float32Array(bufferLength);
                 let lfEnergySum = 0, sampleCount = 0, maxIntensityInWindow = -1;
                 globalPeakFreq = 0; 
 
@@ -385,11 +382,22 @@
                     if (isNaN(calculatedDB) || calculatedDB < 10) calculatedDB = 13.5;
                     if (calculatedDB > 55) calculatedDB = 49.8;
 
+                    // 🔥 SPEKTRUM ANALYSE VED STOP: Finder den mest konstante og dominerende tone i puljen
+                    let maxAccumulatedVal = -1;
+                    for(let i=1; i<bufferLength; i++) {
+                        const freq = i * sampleRate / analyser.fftSize;
+                        if(freq >= 20 && freq <= 50) {
+                            if (cumulativeSpectrum[i] > maxAccumulatedVal) {
+                                maxAccumulatedVal = cumulativeSpectrum[i];
+                                globalPeakFreq = freq;
+                            }
+                        }
+                    }
+
                     document.getElementById('screen-2').className = "hidden";
                     document.getElementById('screen-3').className = "flex flex-col h-full pt-4";
                     document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
-                    
                     document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? Math.round(globalPeakFreq) + ' Hz' : 'Ingen brummen fundet';
                     
                     await fetchLiveWeather(currentLatitude, currentLongitude);
@@ -403,25 +411,22 @@
                 const interval = setInterval(() => {
                     timeLeft--; document.getElementById('countdown').innerText = timeLeft;
                     analyser.getByteFrequencyData(dataArray);
-                    let intervalSum = 0, lfBins = 0, intervalMaxVal = -1, intervalMaxFreq = 0;
+                    let intervalSum = 0, lfBins = 0;
                     
                     for(let i=1; i<bufferLength; i++) {
+                        // Læg realtids-energi til den samlede tids-pulje
+                        cumulativeSpectrum[i] += dataArray[i];
+                        
                         const freq = i * sampleRate / analyser.fftSize;
-                        // Hard afskæring: Lytter udelukkende til intervallet 20-50 Hz
                         if(freq >= 20 && freq <= 50) { 
                             intervalSum += dataArray[i]; lfBins++; 
-                            if (dataArray[i] > intervalMaxVal) {
-                                intervalMaxVal = dataArray[i];
-                                intervalMaxFreq = freq;
+                            if (dataArray[i] > maxIntensityInWindow) {
+                                maxIntensityInWindow = dataArray[i];
                             }
                         }
                     }
                     if(lfBins > 0) {
                         const avg = intervalSum / lfBins; lfEnergySum += avg; sampleCount++;
-                        if (intervalMaxVal > maxIntensityInWindow) {
-                            maxIntensityInWindow = intervalMaxVal;
-                            globalPeakFreq = intervalMaxFreq; 
-                        }
                         document.getElementById('live-db-preview').innerText = `${(15 + (Math.log10(avg || 1) * 12)).toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
@@ -465,16 +470,22 @@
             try {
                 await _performDataSubmit();
                 window.location.reload();
-            } catch (e) { 
-                alert("Fejl under upload."); 
-                if(targetWindow) targetWindow.close(); 
-            }
+            } catch (e) { alert("Fejl under upload."); if(targetWindow) targetWindow.close(); }
         };
 
         window.addEventListener('load', () => {
             const savedUser = localStorage.getItem('humhunter_user_id');
             if (savedUser) document.getElementById('user-identity').value = savedUser;
             document.getElementById('user-identity').addEventListener('input', (e) => { localStorage.setItem('humhunter_user_id', e.target.value); });
+
+            // 🔥 STICKY FIX: Gendanner dit valgte udstyr ved opstart
+            const savedEq = localStorage.getItem('humhunter_equipment');
+            if (savedEq) {
+                selectedEquipment = savedEq;
+                const main = localStorage.getItem('humhunter_eq_main');
+                const sub = localStorage.getItem('humhunter_eq_sub');
+                document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px]">${main}</span><span class="block text-[13px] text-white/60 font-normal mt-0.5">${sub}</span>`;
+            }
 
             const savedEnv = localStorage.getItem('humhunter_environment') || 'Udendørs';
             window.setEnvironment(savedEnv);
@@ -499,3 +510,4 @@
     </script>
 </body>
 </html>
+                        
