@@ -39,7 +39,7 @@
 
             <div class="mb-6">
                 <label class="block text-[15px] font-normal text-white/90 mb-2">Hvem er du (valgfrit)</label>
-                <input id="user-identity" type="text" placeholder="Indtast dit navn eller email..." class="w-full bg-black text-white rounded-xl p-4 text-sm focus:outline-none border border-white/10 placeholder:text-white/20 font-medium shadow-inner">
+                <input id="user-identity" type="text" placeholder="Indtast dit navn eller email..." class="w-full theme-box text-white rounded-xl p-4 text-sm focus:outline-none border border-white/5 placeholder:text-white/30 font-medium shadow-md">
             </div>
 
             <div class="theme-box rounded-xl p-3.5 flex justify-between items-center mb-6 border border-white/5 shadow-md">
@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 2.9 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 3.1 Live</div>
             </div>
         </div>
 
@@ -147,4 +147,21 @@
         </div>
 
         <div id="screen-3" class="hidden flex-col h-full pt-4">
-            <div class="theme-box rounded-xl p-5 mb-4 text-sm space-y
+            <div class="theme-box rounded-xl p-5 mb-4 text-sm space-y-3 shadow-md border border-white/5 mt-4">
+                <div class="flex justify-between border-b border-white/10 pb-2">
+                    <span class="text-white/60 text-base">Beregnet Hum-Lydtryk:</span>
+                    <span id="display-db" class="font-bold text-emerald-400 text-lg">0.0 dB Lp(Z)</span>
+                </div>
+                <div class="flex justify-between border-b border-white/10 pb-2 pt-0.5">
+                    <span class="text-white/60">Dominerende Frekvens:</span>
+                    <span id="display-peak" class="font-bold text-sky-400 text-base">Søger...</span>
+                </div>
+                <div class="flex justify-between pt-0.5">
+                    <span class="text-white/60">GPS Position:</span>
+                    <span id="display-gps" class="font-mono text-white/90">0.0, 0.0</span>
+                </div>
+            </div>
+
+            <div id="debug-panel" class="theme-box rounded-xl p-4 mb-4 border border-sky-500/30 text-xs space-y-2 shadow-inner">
+                <h4 class="font-bold text-sky-400 uppercase tracking-wider flex items-center space-x-1"><span>🔬 Diagnostik: Top 5 Frekvenser (20-60 Hz)</span></h4>
+                <div id="debug-peaks-list" class="font-mono
