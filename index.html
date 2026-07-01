@@ -99,7 +99,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 2.3 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 2.4 Live</div>
             </div>
         </div>
 
@@ -163,9 +163,17 @@
             <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg flex items-center justify-center space-x-2">
                 <span>🚀 Send data til kortet</span>
             </button>
-            <div id="geocache-grid" class="grid grid-cols-2 gap-2 mt-4"></div>
+            <div id="geocache-section" class="theme-box rounded-xl p-4 border border-sky-500/20 shadow-xl space-y-2.5 mt-4">
+                <div class="flex items-center space-x-2 text-sky-400">
+                    <span>🎯</span>
+                    <h3 class="font-bold text-[15px] tracking-wide uppercase">Næste mission: Hum-Caching!</h3>
+                </div>
+                <p class="text-xs text-white/70 leading-relaxed">
+                    Mål 500 meter væk for at lukke hullerne i kortet. Klik på en fri zone for at gemme og åbne ruten i Google Maps:
+                </p>
+                <div id="geocache-grid" class="grid grid-cols-2 gap-2 pt-1"></div>
+            </div>
         </div>
-
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -192,11 +200,8 @@
         let mediaRecorder = null, audioChunks = [], map = null, markersGroup = [], globalMeasurements = [];
         let calculatedDB = 22.1, currentMapFilter = 'Alle';
         let globalPeakFreq = 0;
-        
-        // Globale vejr-variable
         let currentTemp = null, currentWindSpeed = null, currentWindDir = null;
 
-        // Fuldstændig on-demand vejr-fetcher fra åbne kilder
         async function fetchLiveWeather(lat, lng) {
             try {
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m`);
@@ -262,6 +267,52 @@
             } catch (err) { alert("Fejl under generering af JSON."); }
         };
 
+        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function getZoneColor(dbValue) {
+            if (dbValue < 13.0) return '#0c4a6e';  
+            if (dbValue <= 13.6) return '#0ea5e9'; 
+            if (dbValue <= 15.0) return '#38bdf8'; 
+            if (dbValue < 20) return '#22c55e';    
+            if (dbValue < 25) return '#eab308';    
+            if (dbValue < 30) return '#f97316';    
+            return '#ef4444';                      
+        }
+
+        function generateGeocacheMissions(lat, lng) {
+            const grid = document.getElementById('geocache-grid');
+            grid.innerHTML = '';
+            const deltaLat = 500 / 111111; 
+            const deltaLng = 500 / (111111 * Math.cos(lat * Math.PI / 180));
+
+            const directions = [
+                { name: 'Nord ⬆️', lat: lat + deltaLat, lng: lng },
+                { name: 'Syd ⬇️', lat: lat - deltaLat, lng: lng },
+                { name: 'Øst ➡️', lat: lat, lng: lng + deltaLng },
+                { name: 'Vest ⬅️', lat: lat, lng: lng - deltaLng }
+            ];
+
+            directions.forEach(dir => {
+                const isCovered = globalMeasurements.some(m => getDistanceInMeters(dir.lat, dir.lng, m.latitude, m.longitude) < 250);
+                const btn = document.createElement('button');
+                if (isCovered) {
+                    btn.className = "p-2.5 bg-gray-800/40 text-white/30 rounded-lg text-center text-xs font-normal cursor-not-allowed border border-transparent";
+                    btn.innerHTML = `<span class="block font-bold">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
+                } else {
+                    btn.onclick = () => window.submitAndGoToMission(dir.lat, dir.lng);
+                    btn.className = "p-2.5 bg-sky-950 text-sky-300 rounded-lg text-center text-xs font-semibold border border-sky-500/30 hover:bg-sky-900 transition-all shadow-sm";
+                    btn.innerHTML = `<span class="block font-bold text-white">${dir.name}</span><span class="text-[10px] text-sky-400 font-normal">🎯 Fri Zone</span>`;
+                }
+                grid.appendChild(btn);
+            });
+        }
+
         function updateMapMarkers() {
             markersGroup.forEach(m => map.removeLayer(m));
             markersGroup = [];
@@ -272,19 +323,15 @@
                 const dbVal = data.decibel || 20;
                 const color = getZoneColor(dbVal);
                 
-                // 1. Let gennemsigtig dækningsring uden hårde kanter
                 const circle = L.circle([data.latitude, data.longitude], { 
                     radius: 500, fillColor: color, fillOpacity: 0.12, stroke: false 
                 }).addTo(map);
                 
-                // 2. 🔥 LØSNING PÅ COLOR BLENDING: 100% uigennemsigtig solid prik i midten! Farven lyver aldrig mere.
                 const centerDot = L.circleMarker([data.latitude, data.longitude], {
                     radius: 7, fillColor: color, fillOpacity: 1.0, color: '#ffffff', weight: 1.5, opacity: 1.0
                 }).addTo(map);
 
                 const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'}) : 'Ukendt';
-                
-                // Visuelle vejr-tekster i popuppen
                 const weatherInfo = data.weather ? `<div class="border-t border-white/10 pt-1 mt-1 text-[11px] text-white/60">💨 <b>Vind:</b> ${data.weather.wind_speed} km/t (${data.weather.wind_direction}°)<br>🌡️ <b>Temp:</b> ${data.weather.temperature} °C</div>` : '';
 
                 const popupContent = `
@@ -292,7 +339,7 @@
                         <div class="font-bold text-sm text-sky-400 border-b border-white/10 pb-1 mb-1">📍 Hum Måling</div>
                         <div><b>Måler:</b> <span class="text-sky-200 font-bold">${data.user_id || 'Anonym'}</span></div>
                         <div><b>Hum Lydtryk:</b> <span class="text-yellow-400 font-bold">${dbVal.toFixed(1)} dB Lp(Z)</span></div>
-                        <div><b>Topfrekvens:</b> <span class="text-emerald-400 font-bold">${data.peak_frequency ? data.peak_frequency + ' Hz' : '0 Hz'}</span></div>
+                        <div><b>Topfrekvens:</b> <span class="text-emerald-400 font-bold">${data.peak_frequency ? data.peak_frequency + ' Hz' : 'Ukendt'}</span></div>
                         <div><b>Sted:</b> ${data.environment || 'Udendørs'} (${dateStr})</div>
                         ${weatherInfo}
                         ${data.comment ? `<div class="bg-white/5 p-1.5 rounded mt-1 italic">"${data.comment}"</div>` : ''}
@@ -308,9 +355,16 @@
         function initLiveMap() {
             map = L.map('map').setView([55.8424, 11.5562], 11);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
             onSnapshot(collection(db, "measurements"), (snapshot) => {
                 globalMeasurements = [];
-                snapshot.forEach(doc => globalMeasurements.push(doc.data()));
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // 🔥 SKUDSIKKER REDNINGSLINE: Skipper korrupte dokumenter uden GPS-data, så kortet aldrig fryser
+                    if (data.latitude && data.longitude) {
+                        globalMeasurements.push(data);
+                    }
+                });
                 globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
                 updateMapMarkers();
             });
@@ -347,9 +401,9 @@
                     document.getElementById('screen-3').className = "flex flex-col h-full pt-4";
                     document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
-                    document.getElementById('display-peak').innerText = `${Math.round(globalPeakFreq)} Hz`;
+                    document.getElementById('display-peak').innerText = `${globalPeakFreq > 0 ? Math.round(globalPeakFreq) + ' Hz' : 'Søger...'}`;
                     
-                    // 🔥 Henter vejrdata med det samme i baggrunden baseret på GPS
+                    generateGeocacheMissions(currentLatitude, currentLongitude);
                     await fetchLiveWeather(currentLatitude, currentLongitude);
                 };
 
@@ -363,9 +417,10 @@
                     analyser.getByteFrequencyData(dataArray);
                     let intervalSum = 0, lfBins = 0, intervalMaxVal = 0, intervalMaxFreq = 0;
                     
-                    for(let i=0; i<bufferLength; i++) {
+                    // 🔥 RETTELSE: Starter ved i=1 i stedet for 0 for at udelukke DC-mikrofonstøj (0 Hz)
+                    for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
-                        if(freq >= 0 && freq <= 50) { 
+                        if(freq > 0 && freq <= 50) { 
                             intervalSum += dataArray[i]; lfBins++; 
                             if (dataArray[i] > intervalMaxVal) {
                                 intervalMaxVal = dataArray[i];
@@ -397,7 +452,7 @@
             await addDoc(collection(db, "measurements"), {
                 timestamp: new Date(), latitude: currentLatitude, longitude: currentLongitude,
                 environment: selectedEnvironment, equipment: selectedEquipment, decibel: calculatedDB,
-                peak_frequency: Math.round(globalPeakFreq),
+                peak_frequency: globalPeakFreq > 0 ? Math.round(globalPeakFreq) : 0,
                 user_id: document.getElementById('user-identity').value || "Anonym",
                 comment: document.getElementById('user-comment').value, audio_url: fileUrl,
                 weather: {
@@ -418,6 +473,16 @@
                 btnSubmit.innerText = "✅ Målingen er gemt!";
                 setTimeout(() => { window.location.reload(); }, 1500);
             } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
+        };
+
+        window.submitAndGoToMission = async function(missionLat, missionLng) {
+            try {
+                await _performDataSubmit();
+                setTimeout(() => {
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${missionLat},${missionLng}`, '_blank');
+                    window.location.reload();
+                }, 1500);
+            } catch (e) { alert("Fejl under lagring."); }
         };
 
         window.addEventListener('load', () => {
