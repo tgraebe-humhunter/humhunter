@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 2.6 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 2.7 Live</div>
             </div>
         </div>
 
@@ -163,7 +163,7 @@
             </div>
 
             <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-24 mb-5 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
-            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-24 mb-5 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
+            
             <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg flex items-center justify-center space-x-2">
                 <span>🚀 Send data til kortet</span>
             </button>
@@ -351,7 +351,15 @@
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
             let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // 🔥 SIKRING AF RÅ LYD: Slår alle undertrykkelsesfiltre fra i browseren, så dybe toner ikke slettes
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    } 
+                });
+                
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const source = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
@@ -399,7 +407,7 @@
                     
                     for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
-                        // 🔥 HARD AF-SKÆRING: Lytter nu KUN til det hørbare lavfrekvens-område (20-50 Hz)
+                        // Hard afskæring: Lytter udelukkende til intervallet 20-50 Hz
                         if(freq >= 20 && freq <= 50) { 
                             intervalSum += dataArray[i]; lfBins++; 
                             if (dataArray[i] > intervalMaxVal) {
@@ -451,9 +459,8 @@
             } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
         };
 
-        // 🔥 RETTET: Skudsikker og krystalklar Google Maps URL uden strenge-kludder eller pop-up blokeringer
         window.submitAndGoToMission = async function(missionLat, missionLng) {
-            const mapsUrl = "https://www.google.com/maps/dir/?api=1&destination=" + missionLat + "," + missionLng + "&origin=" + currentLatitude + "," + currentLongitude;
+            const mapsUrl = "https://www.google.com/maps/dir/?api=1&destination=" + missionLat + "," + missionLng + "&origin=" + currentLatitude + "," + currentLongitude + "&travelmode=driving";
             const targetWindow = window.open(mapsUrl, '_blank');
             try {
                 await _performDataSubmit();
