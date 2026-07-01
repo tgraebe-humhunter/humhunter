@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 2.8 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 2.9 Live</div>
             </div>
         </div>
 
@@ -147,7 +147,7 @@
         </div>
 
         <div id="screen-3" class="hidden flex-col h-full pt-4">
-            <div class="theme-box rounded-xl p-5 mb-5 text-sm space-y-3 shadow-md border border-white/5 mt-4">
+            <div class="theme-box rounded-xl p-5 mb-4 text-sm space-y-3 shadow-md border border-white/5 mt-4">
                 <div class="flex justify-between border-b border-white/10 pb-2">
                     <span class="text-white/60 text-base">Beregnet Hum-Lydtryk:</span>
                     <span id="display-db" class="font-bold text-emerald-400 text-lg">0.0 dB Lp(Z)</span>
@@ -162,7 +162,14 @@
                 </div>
             </div>
 
-            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-24 mb-5 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
+            <div id="debug-panel" class="theme-box rounded-xl p-4 mb-4 border border-sky-500/30 text-xs space-y-2 shadow-inner">
+                <h4 class="font-bold text-sky-400 uppercase tracking-wider flex items-center space-x-1"><span>🔬 Diagnostik: Top 5 Frekvenser (20-60 Hz)</span></h4>
+                <div id="debug-peaks-list" class="font-mono space-y-1 text-white/80 divide-y divide-white/5 pt-1">
+                    <div class="py-1">Afventer måledata...</div>
+                </div>
+            </div>
+
+            <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-22 mb-4 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
             
             <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg flex items-center justify-center space-x-2">
                 <span>🚀 Send data til kortet</span>
@@ -195,6 +202,9 @@
         let calculatedDB = 22.1, currentMapFilter = 'Alle';
         let globalPeakFreq = 0;
         let currentTemp = null, currentWindSpeed = null, currentWindDir = null;
+        
+        // Globale variable til fejlsøgning
+        let globalTopPeaksArray = [];
 
         async function fetchLiveWeather(lat, lng) {
             try {
@@ -347,6 +357,16 @@
             });
         }
 
+        function getZoneColor(dbValue) {
+            if (dbValue < 13.0) return '#0c4a6e';  
+            if (dbValue <= 13.6) return '#0ea5e9'; 
+            if (dbValue <= 15.0) return '#38bdf8'; 
+            if (dbValue < 20) return '#22c55e';    
+            if (dbValue < 25) return '#eab308';    
+            if (dbValue < 30) return '#f97316';    
+            return '#ef4444';                      
+        }
+
         window.startMeasurement = async function() {
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
             let mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
@@ -356,158 +376,5 @@
                 });
                 
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioCtx.createMediaStreamSource(stream);
-                const analyser = audioCtx.createAnalyser();
+                const source = audioCtx.createMediaStream
                 
-                analyser.fftSize = 16384; 
-                source.connect(analyser);
-                
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                const sampleRate = audioCtx.sampleRate;
-                
-                // 🔥 NY SPEKTRUM-PULJE: Gemmer og akkumulerer energi over tid
-                let cumulativeSpectrum = new Float32Array(bufferLength);
-                let lfEnergySum = 0, sampleCount = 0, maxIntensityInWindow = -1;
-                globalPeakFreq = 0; 
-
-                mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
-                audioChunks = [];
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                mediaRecorder.onstop = async () => {
-                    audioCtx.close();
-                    
-                    let avgEnergy = lfEnergySum / (sampleCount || 1);
-                    calculatedDB = 15 + (Math.log10(avgEnergy || 1) * 12) + (maxIntensityInWindow / 50);
-                    if (isNaN(calculatedDB) || calculatedDB < 10) calculatedDB = 13.5;
-                    if (calculatedDB > 55) calculatedDB = 49.8;
-
-                    // 🔥 SPEKTRUM ANALYSE VED STOP: Finder den mest konstante og dominerende tone i puljen
-                    let maxAccumulatedVal = -1;
-                    for(let i=1; i<bufferLength; i++) {
-                        const freq = i * sampleRate / analyser.fftSize;
-                        if(freq >= 20 && freq <= 50) {
-                            if (cumulativeSpectrum[i] > maxAccumulatedVal) {
-                                maxAccumulatedVal = cumulativeSpectrum[i];
-                                globalPeakFreq = freq;
-                            }
-                        }
-                    }
-
-                    document.getElementById('screen-2').className = "hidden";
-                    document.getElementById('screen-3').className = "flex flex-col h-full pt-4";
-                    document.getElementById('display-gps').innerText = `${currentLatitude.toFixed(4)}, ${currentLongitude.toFixed(4)}`;
-                    document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
-                    document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? Math.round(globalPeakFreq) + ' Hz' : 'Ingen brummen fundet';
-                    
-                    await fetchLiveWeather(currentLatitude, currentLongitude);
-                };
-
-                document.getElementById('view-measure').classList.add('hidden');
-                document.getElementById('screen-2').className = "flex flex-col justify-center items-center h-full text-center space-y-8 mt-16 px-4";
-                mediaRecorder.start();
-                let timeLeft = 10;
-                
-                const interval = setInterval(() => {
-                    timeLeft--; document.getElementById('countdown').innerText = timeLeft;
-                    analyser.getByteFrequencyData(dataArray);
-                    let intervalSum = 0, lfBins = 0;
-                    
-                    for(let i=1; i<bufferLength; i++) {
-                        // Læg realtids-energi til den samlede tids-pulje
-                        cumulativeSpectrum[i] += dataArray[i];
-                        
-                        const freq = i * sampleRate / analyser.fftSize;
-                        if(freq >= 20 && freq <= 50) { 
-                            intervalSum += dataArray[i]; lfBins++; 
-                            if (dataArray[i] > maxIntensityInWindow) {
-                                maxIntensityInWindow = dataArray[i];
-                            }
-                        }
-                    }
-                    if(lfBins > 0) {
-                        const avg = intervalSum / lfBins; lfEnergySum += avg; sampleCount++;
-                        document.getElementById('live-db-preview').innerText = `${(15 + (Math.log10(avg || 1) * 12)).toFixed(1)} dB Lp(Z)`;
-                    }
-                    if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
-                }, 1000);
-            } catch (err) { alert("Ingen mikrofonadgang!"); }
-        };
-
-        async function _performDataSubmit() {
-            const isMp4 = !MediaRecorder.isTypeSupported('audio/webm');
-            const filename = `hum_${Date.now()}.${isMp4 ? 'mp4' : 'webm'}`;
-            const audioBlob = new Blob(audioChunks, { type: isMp4 ? 'audio/mp4' : 'audio/webm' });
-            const storageRef = ref(storage, `audio_clips/${filename}`);
-            const snapshot = await uploadBytes(storageRef, audioBlob);
-            const fileUrl = await getDownloadURL(snapshot.ref);
-
-            await addDoc(collection(db, "measurements"), {
-                timestamp: new Date(), latitude: currentLatitude, longitude: currentLongitude,
-                environment: selectedEnvironment, equipment: selectedEquipment, decibel: calculatedDB,
-                peak_frequency: globalPeakFreq >= 20 ? Math.round(globalPeakFreq) : 0,
-                user_id: document.getElementById('user-identity').value || "Anonym",
-                comment: document.getElementById('user-comment').value, audio_url: fileUrl,
-                weather: { temperature: currentTemp || 0, wind_speed: currentWindSpeed || 0, wind_direction: currentWindDir || 0 }
-            });
-        }
-
-        window.submitData = async function() {
-            const btnSubmit = document.getElementById('btn-submit');
-            btnSubmit.disabled = true; btnSubmit.className = "w-full bg-blue-600 rounded-xl py-4 text-xl font-bold shadow-lg";
-            btnSubmit.innerText = "⏳ Gemmer cloud-data...";
-            try {
-                await _performDataSubmit();
-                btnSubmit.className = "w-full bg-emerald-600 rounded-xl py-4 text-xl font-bold";
-                btnSubmit.innerText = "✅ Målingen er gemt!";
-                setTimeout(() => { window.location.reload(); }, 1500);
-            } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
-        };
-
-        window.submitAndGoToMission = async function(missionLat, missionLng) {
-            const mapsUrl = "https://www.google.com/maps/dir/?api=1&destination=" + missionLat + "," + missionLng + "&origin=" + currentLatitude + "," + currentLongitude + "&travelmode=driving";
-            const targetWindow = window.open(mapsUrl, '_blank');
-            try {
-                await _performDataSubmit();
-                window.location.reload();
-            } catch (e) { alert("Fejl under upload."); if(targetWindow) targetWindow.close(); }
-        };
-
-        window.addEventListener('load', () => {
-            const savedUser = localStorage.getItem('humhunter_user_id');
-            if (savedUser) document.getElementById('user-identity').value = savedUser;
-            document.getElementById('user-identity').addEventListener('input', (e) => { localStorage.setItem('humhunter_user_id', e.target.value); });
-
-            // 🔥 STICKY FIX: Gendanner dit valgte udstyr ved opstart
-            const savedEq = localStorage.getItem('humhunter_equipment');
-            if (savedEq) {
-                selectedEquipment = savedEq;
-                const main = localStorage.getItem('humhunter_eq_main');
-                const sub = localStorage.getItem('humhunter_eq_sub');
-                document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px]">${main}</span><span class="block text-[13px] text-white/60 font-normal mt-0.5">${sub}</span>`;
-            }
-
-            const savedEnv = localStorage.getItem('humhunter_environment') || 'Udendørs';
-            window.setEnvironment(savedEnv);
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    currentLatitude = pos.coords.latitude; currentLongitude = pos.coords.longitude;
-                    document.getElementById('gps-status').innerHTML = "Signal låst 🟢";
-                    document.getElementById('gps-status').className = "text-green-400 font-bold text-[15px]";
-                    generateGeocacheMissions(currentLatitude, currentLongitude);
-                }, err => {}, { enableHighAccuracy: true });
-            }
-            
-            onSnapshot(collection(db, "measurements"), (snapshot) => {
-                globalMeasurements = [];
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    if(d.latitude && d.longitude) globalMeasurements.push(d);
-                });
-                if(currentLatitude && currentLongitude) generateGeocacheMissions(currentLatitude, currentLongitude);
-            });
-        });
-    </script>
-</body>
-</html>
-                        
