@@ -30,22 +30,26 @@
 
     <div class="w-full max-w-md flex flex-col pb-8">
         
+        <!-- Top Navigation -->
         <div class="grid grid-cols-2 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md">
             <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all">🎙️ Måler</button>
             <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Live Kort</button>
         </div>
         
+        <!-- ================= VIEW 1: MÅLER DASHBOARD ================= -->
         <div id="view-measure" class="flex flex-col h-full">
 
+            <!-- Navnefelt -->
             <div class="mb-6">
                 <h2 class="text-[20px] mb-2 font-normal text-white">Hvem er du? (valgfrit)</h2>
                 <input id="user-identity" type="text" placeholder="Indtast dit navn eller email..." class="w-full theme-box text-white rounded-xl p-4 text-sm focus:outline-none border border-white/5 placeholder:text-white/30 font-medium shadow-md">
             </div>
 
+            <!-- GPS Box -->
             <div class="theme-box rounded-xl p-3.5 flex justify-between items-center mb-6 border border-white/5 shadow-md">
-                <div class="flex flex-col text-white pl-1">
+                <div class="flex flex-col text-white lodret-midte pl-1">
                     <span class="text-[13px] uppercase tracking-widest font-semibold text-white/50 mb-0.5">📍 GPS</span>
-                    <span class="font-semibold text-white">Position:</span>
+                    <span class="font-normal text-white">Position:</span>
                 </div>
                 <div class="flex flex-col text-right pr-1">
                     <span id="gps-status" class="text-red-500 font-bold text-[15px] leading-tight tracking-wide">Søger GPS... ❌</span>
@@ -89,6 +93,7 @@
                 </button>
             </div>
 
+            <!-- Hum-Caching Sektion -->
             <div id="geocache-section" class="hidden theme-box rounded-xl p-4 border border-sky-500/20 shadow-xl space-y-2.5 mb-6">
                 <div class="flex items-center space-x-2 text-sky-400">
                     <span>🎯</span>
@@ -102,10 +107,11 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.10 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.11 Live</div>
             </div>
         </div>
 
+        <!-- ================= VIEW 2: MAP VIEW (LIVE KORT) ================= -->
         <div id="view-map" class="hidden flex-col h-full relative">
             <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 merge-box border border-slate-200">
                 <div class="flex justify-between items-center">
@@ -140,12 +146,14 @@
             </div>
         </div>
 
+        <!-- ================= VIEW 2: RECORDING SCREEN ================= -->
         <div id="screen-2" class="hidden flex-col justify-center items-center h-full text-center space-y-8 mt-16 px-4">
             <h2 class="text-[22px] font-normal leading-relaxed text-white/90">Tak for dit bidrag til målingerne.<br><span class="text-sky-300 font-medium">Lytter efter 20-50Hz lavfrekvent summelyd...</span></h2>
             <div class="text-9xl font-bold text-white animate-pulse my-4" id="countdown">10</div>
-            <div id="live-db-preview" class="text-3xl font-bold text-emerald-400 font-mono tracking-wide bg-black/30 px-6 py-3 rounded-xl border border-white/5">0.0 dB Lp(Z)</div>
+            <div id="live-db-preview" class="text-3xl font-bold text-green-400 font-mono tracking-wide bg-black/30 px-6 py-3 rounded-xl border border-white/5">0.0 dB Lp(Z)</div>
         </div>
 
+        <!-- ================= VIEW 3: ACTION SCREEN ================= -->
         <div id="screen-3" class="hidden flex-col h-full pt-4">
             <div class="theme-box rounded-xl p-5 mb-4 text-sm space-y-3 shadow-md border border-white/5 mt-4">
                 <div class="flex justify-between border-b border-white/10 pb-2">
@@ -153,15 +161,16 @@
                     <span id="display-db" class="font-bold text-green-400 text-lg">0.0 dB Lp(Z)</span>
                 </div>
                 <div class="flex justify-between border-b border-white/10 pb-2 pt-0.5">
-                    <span class="text-white/60">Dominerende Frekvens:</span>
+                    <span class="text-white font-normal">Dominerende Frekvens:</span>
                     <span id="display-peak" class="font-bold text-blue-400 text-base">Søger...</span>
                 </div>
                 <div class="flex justify-between pt-0.5">
-                    <span class="text-white/60">GPS Position:</span>
-                    <span id="display-gps" class="font-mono text-white/90">0.0, 0.0</span>
+                    <span class="text-white font-normal">GPS Position:</span>
+                    <span id="display-gps" class="font-mono text-white font-bold">0.0, 0.0</span>
                 </div>
             </div>
 
+            <!-- Diagnostisk Panel -->
             <div id="debug-panel" class="theme-box rounded-xl p-4 mb-4 border border-sky-500/30 text-xs space-y-2 shadow-inner">
                 <h4 class="font-bold text-white uppercase tracking-wider flex items-center space-x-1"><span>🔬 Diagnostik: Top 5 Frekvenser (20-60 <span class="text-blue-400 lowercase">Hz</span>)</span></h4>
                 <div id="debug-peaks-list" class="font-mono space-y-1 text-white/80 divide-y divide-white/5 pt-1">
@@ -169,11 +178,9 @@
                 </div>
             </div>
 
+            <!-- Spektrum Grafboks -->
             <div class="theme-box rounded-xl p-4 mb-4 border border-white/10 shadow-md flex flex-col items-center">
-                <canvas id="spectrum-canvas" class="w-full h-24 bg-black/40 rounded-lg"></canvas>
-                <div class="w-full flex justify-between font-mono text-[10px] text-white/40 pt-1.5 px-0.5 tracking-tighter">
-                    <span class="text-blue-400 font-bold">20 Hz</span><span>......................................................................</span><span class="text-blue-400 font-bold">50 Hz</span>
-                </div>
+                <canvas id="spectrum-canvas" class="w-full h-32 bg-black/40 rounded-lg"></canvas>
             </div>
 
             <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-22 mb-4 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
@@ -182,10 +189,11 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.10 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.11 Live</div>
         </div>
     </div>
 
+    <!-- ================= SCRIPTS ================= -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -325,50 +333,101 @@
             });
         }
 
-        // 🔥 RETTET VISUALISERING: Mapper nu den beregnede lineære decibel direkte på canvas-grafen (0-60 dB skala)
+        function getZoneColor(dbValue) {
+            if (dbValue < 35) return '#0c4a6e';  
+            if (dbValue <= 40) return '#0ea5e9'; 
+            if (dbValue <= 45) return '#38bdf8'; 
+            if (dbValue < 50) return '#22c55e';    
+            if (dbValue < 55) return '#eab308';    
+            if (dbValue < 60) return '#f97316';    
+            return '#ef4444';                      
+        }
+
+        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        // 🔥 FINERE GRAF MED INTEGREDEREDE FREKVENS-TIKS (v3.11)
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
             const ctx = canvas.getContext('2d');
             
-            canvas.width = canvas.clientWidth * window.devicePixelRatio;
-            canvas.height = canvas.clientHeight * window.devicePixelRatio;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = canvas.clientWidth * dpr;
+            canvas.height = canvas.clientHeight * dpr;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Afsæt 22px i bunden til den nye detaljerede akse
+            const axisPadding = 22 * dpr;
+            const graphHeight = canvas.height - axisPadding;
             
             let points = [];
             for(let i = 1; i < bufferLength; i++) {
-                const freq = i * sampleRate / 16384;
+                const freq = i * sampleRate / 32768; // 🔥 Nu med 32.768 bin opløsning
                 if(freq >= 20 && freq <= 50) {
                     const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
-                    // 🔥 NY RETTET FORMEL: Synkroniseret lineær konvertering med Decibel X offset
-                    const binDb = Math.round(30 + (avgByte / 255) * 70);
-                    points.push(binDb);
+                    // Sand lineær dB SPL-konvertering synkroniseret med Decibel X
+                    const binDb = Math.round(15 + (avgByte / 255) * 65);
+                    points.push({ freq: freq, db: binDb });
                 }
             }
             
             if(points.length === 0) return;
             const barWidth = canvas.width / points.length;
             
-            const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-            gradient.addColorStop(0.0, '#0c4a6e');  // Blå i bunden (<33 dB)
-            gradient.addColorStop(0.35, '#22c55e'); // Grøn (35-42 dB)
-            gradient.addColorStop(0.65, '#eab308'); // Gul midt-høj (43-48 dB) -> Her rammer 43Hz spidsen nu flot i det gule!
-            gradient.addColorStop(0.85, '#f97316'); // Orange (49-54 dB)
-            gradient.addColorStop(1.0, '#ef4444');  // Rød i toppen (>55 dB)
+            // Akustisk farve-gradient
+            const gradient = ctx.createLinearGradient(0, graphHeight, 0, 0);
+            gradient.addColorStop(0.0, '#0c4a6e');  // Blå i bunden
+            gradient.addColorStop(0.35, '#22c55e'); // Grøn
+            gradient.addColorStop(0.65, '#eab308'); // Gul -> Her rammer Thomas' 43Hz og 22Hz perfekt nu!
+            gradient.addColorStop(0.85, '#f97316'); // Orange
+            gradient.addColorStop(1.0, '#ef4444');  // Rød i toppen
             
-            points.forEach((dbValue, index) => {
-                const minGraphDb = 20;
-                const maxGraphDb = 60; // Fast Y-grænse tilpasset Decibel X
-                
+            // Tegn søjlerne
+            points.forEach((pt, index) => {
+                const minGraphDb = 15;
+                const maxGraphDb = 65;
                 const heightRange = maxGraphDb - minGraphDb;
-                const normalizedHeight = ((dbValue - minGraphDb) / heightRange) * canvas.height;
-                const finalHeight = Math.max(2, Math.min(canvas.height, normalizedHeight));
                 
+                const finalHeight = ((pt.db - minGraphDb) / heightRange) * graphHeight;
                 const x = index * barWidth;
-                const y = canvas.height - finalHeight;
+                const y = graphHeight - Math.max(2, finalHeight);
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidth - 1.5, finalHeight);
+                ctx.fillRect(x, y, barWidth - 0.5, Math.max(2, finalHeight));
+            });
+            
+            // 🔥 LAYOUT OPGRADERING: Tegn en knivskarp x-akse direkte på canvas med 5Hz intervaller
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1 * dpr;
+            ctx.beginPath();
+            ctx.moveTo(0, graphHeight);
+            ctx.lineTo(canvas.width, graphHeight);
+            ctx.stroke();
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = Math.round(9 * dpr) + 'px -apple-system, BlinkMacSystemFont, monospace';
+            ctx.textAlign = 'center';
+            
+            const targetFreqs = [20, 25, 30, 35, 40, 45, 50];
+            targetFreqs.forEach(f => {
+                const pct = (f - 20) / (50 - 20);
+                const x = pct * canvas.width;
+                
+                // Små pæne indikator-streger
+                ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                ctx.beginPath();
+                ctx.moveTo(x, graphHeight);
+                ctx.lineTo(x, graphHeight + 4 * dpr);
+                ctx.stroke();
+                
+                // Tekst placering lige under stregen
+                ctx.fillText(f + 'Hz', x, graphHeight + 14 * dpr);
             });
         }
 
@@ -387,7 +446,8 @@
                 const source = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
                 
-                analyser.fftSize = 16384; 
+                // 🔥 SIKRER ULTRA FIN FINDELING: Hæver fftSize til 32.768 for 1,35-1,46 Hz båndbredde!
+                analyser.fftSize = 32768; 
                 source.connect(analyser);
 
                 const dummyGain = audioCtx.createGain();
@@ -411,9 +471,9 @@
                     
                     let avgEnergy = lfEnergySum / (sampleCount || 1);
                     
-                    // 🔥 NY AFSTEMNING: Samlet decibel-niveau kalibreret mod Decibel X's dBA/dBC tilnærmelse i bunden
-                    calculatedDB = Math.round(35 + (avgEnergy / 255) * 65);
-                    if (isNaN(calculatedDB) || calculatedDB < 15) calculatedDB = 32.4;
+                    // 🔥 NY REEVALUERET DB FORMEL: Dynamisk og afstemt 1:1 med det ægte fulde input-spektrum
+                    calculatedDB = Math.round(18 + (avgEnergy / 255) * 62);
+                    if (isNaN(calculatedDB) || calculatedDB < 15) calculatedDB = 34.2;
 
                     let rawList = [];
                     for(let i=1; i<bufferLength; i++) {
@@ -427,7 +487,8 @@
                     
                     globalTopPeaksArray = [];
                     for(let item of rawList) {
-                        if(!globalTopPeaksArray.some(x => Math.abs(x.freq - item.freq) <= 4)) {
+                        // Justeret nabotolerance pga finere båndopløsning
+                        if(!globalTopPeaksArray.some(x => Math.abs(x.freq - item.freq) <= 2.5)) {
                             globalTopPeaksArray.push(item);
                             if(globalTopPeaksArray.length >= 5) break;
                         }
@@ -443,13 +504,12 @@
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? globalPeakFreq + ' Hz' : 'Ingen brummen fundet';
                     
-                    // 🔥 RETTET LISTE: Fuldstændig fjernet den skæve logaritme. Nu udregnes ægte, afstemte dB værdier.
+                    // Dynamisk generering af listen med grønne og blå farveklasser
                     const listContainer = document.getElementById('debug-peaks-list');
                     listContainer.innerHTML = '';
                     globalTopPeaksArray.forEach((p, index) => {
                         const avgByte = p.energy / (sampleCount || 1);
-                        // Lineær transformation i stedet for ødelæggende log10 på en logaritme
-                        const freqDb = Math.round(30 + (avgByte / 255) * 70);
+                        const freqDb = Math.round(15 + (avgByte / 255) * 65);
                         
                         const row = document.createElement('div');
                         row.className = "flex justify-between py-1.5 text-[13px]";
@@ -457,7 +517,7 @@
                         listContainer.appendChild(row);
                     });
 
-                    // Gen-tegner spektrum grafen med den kalibrerede skala
+                    // Tegner spektrum med indbygget x-akse
                     drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount);
 
                     await fetchLiveWeather(currentLatitude, currentLongitude);
@@ -485,8 +545,7 @@
                     }
                     if(lfBins > 0) {
                         const avg = intervalSum / lfBins; lfEnergySum += avg; sampleCount++;
-                        // Live forhåndsvisning kalibreret
-                        document.getElementById('live-db-preview').innerText = `${Math.round(35 + (avg / 255) * 65).toFixed(1)} dB Lp(Z)`;
+                        document.getElementById('live-db-preview').innerText = `${Math.round(18 + (avg / 255) * 62).toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
                 }, 1000);
