@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="da">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hum Hunter - Støjdetektiv</title>
@@ -38,12 +38,12 @@
         <div id="view-measure" class="flex flex-col h-full">
 
             <div class="mb-6">
-                <h2 class="text-[20px] mb-2 font-normal">Hvem er du? (valgfrit)</h2>
+                <h2 class="text-[20px] mb-2 font-normal text-white">Hvem er du? (valgfrit)</h2>
                 <input id="user-identity" type="text" placeholder="Indtast dit navn eller email..." class="w-full theme-box text-white rounded-xl p-4 text-sm focus:outline-none border border-white/5 placeholder:text-white/30 font-medium shadow-md">
             </div>
 
             <div class="theme-box rounded-xl p-3.5 flex justify-between items-center mb-6 border border-white/5 shadow-md">
-                <div class="flex flex-col text-gray-400 pl-1">
+                <div class="flex flex-col text-white pl-1">
                     <span class="text-[13px] uppercase tracking-widest font-semibold text-white/50 mb-0.5">📍 GPS</span>
                     <span class="font-semibold text-white">Position:</span>
                 </div>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="mb-6">
-                <h2 class="text-[20px] mb-2 font-normal">Hvor måler du?</h2>
+                <h2 class="text-[20px] mb-2 font-normal text-white">Hvor måler du?</h2>
                 <div class="theme-box rounded-xl p-1.5 grid grid-cols-2 gap-2 shadow-md border border-white/5">
                     <button id="btn-indoor" onclick="setEnvironment('Indendørs')" class="measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold">
                         <span class="text-xl">🏠</span> <span class="tracking-wider">Inde</span>
@@ -65,11 +65,11 @@
             </div>
 
             <div class="mb-6 relative" id="custom-select-wrapper">
-                <h2 class="text-[20px] mb-2 font-normal">Hvilket udstyr?</h2>
+                <h2 class="text-[20px] mb-2 font-normal text-white">Hvilket udstyr?</h2>
                 <div class="theme-box rounded-xl p-3.5 flex justify-between items-center cursor-pointer shadow-md border border-white/5" onclick="toggleDropdown()">
                     <div id="custom-select-text" class="leading-snug">
-                        <span class="block font-semibold text-[17px]">📱 iPhone</span>
-                        <span class="block text-[13px] text-white/60 font-normal mt-0.5">(Nyere end 3 år)</span>
+                        <span class="block font-semibold text-[17px] text-white">📱 iPhone</span>
+                        <span class="block text-[13px] text-white/60 font-normal">(Nyere end 3 år)</span>
                     </div>
                     <svg class="w-5 h-5 text-white/50 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
@@ -85,7 +85,7 @@
             <div class="mb-6">
                 <button id="btn-start" onclick="startMeasurement()" class="w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 active:scale-95 transition-transform shadow-lg border border-white/5">
                     <div class="w-6 h-6 rounded-full bg-red-600 border-[3px] border-white flex-shrink-0"></div>
-                    <span class="text-2xl font-normal">Start 10sek måling</span>
+                    <span class="text-2xl font-normal text-white">Start 10sek måling</span>
                 </button>
             </div>
 
@@ -101,8 +101,8 @@
             </div>
 
             <div class="mt-auto text-center pb-2 opacity-40">
-                <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 3.8 Live</div>
+                <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.9 Live</div>
             </div>
         </div>
 
@@ -149,30 +149,30 @@
         <div id="screen-3" class="hidden flex-col h-full pt-4">
             <div class="theme-box rounded-xl p-5 mb-4 text-sm space-y-3 shadow-md border border-white/5 mt-4">
                 <div class="flex justify-between border-b border-white/10 pb-2">
-                    <span class="text-white/60 text-base">Beregnet Hum-Lydtryk:</span>
-                    <span id="display-db" class="font-bold text-emerald-400 text-lg">0.0 dB Lp(Z)</span>
+                    <span class="text-white font-normal text-base">Beregnet Hum-Lydtryk:</span>
+                    <span id="display-db" class="font-bold text-green-400 text-lg">0.0 dB Lp(Z)</span>
                 </div>
                 <div class="flex justify-between border-b border-white/10 pb-2 pt-0.5">
-                    <span class="text-white/60">Dominerende Frekvens:</span>
-                    <span id="display-peak" class="font-bold text-sky-400 text-base">Søger...</span>
+                    <span class="text-white font-normal">Dominerende Frekvens:</span>
+                    <span id="display-peak" class="font-bold text-blue-400 text-base">Søger...</span>
                 </div>
                 <div class="flex justify-between pt-0.5">
-                    <span class="text-white/60">GPS Position:</span>
-                    <span id="display-gps" class="font-mono text-white/90">0.0, 0.0</span>
+                    <span class="text-white font-normal">GPS Position:</span>
+                    <span id="display-gps" class="font-mono text-white font-bold">0.0, 0.0</span>
                 </div>
             </div>
 
             <div id="debug-panel" class="theme-box rounded-xl p-4 mb-4 border border-sky-500/30 text-xs space-y-2 shadow-inner">
-                <h4 class="font-bold text-sky-400 uppercase tracking-wider flex items-center space-x-1"><span>🔬 Diagnostik: Top 5 Frekvenser (20-60 Hz)</span></h4>
+                <h4 class="font-bold text-white uppercase tracking-wider flex items-center space-x-1"><span>🔬 Diagnostik: Top 5 Frekvenser (20-60 <span class="text-blue-400 lowercase">Hz</span>)</span></h4>
                 <div id="debug-peaks-list" class="font-mono space-y-1 text-white/80 divide-y divide-white/5 pt-1">
-                    <div class="py-1">Afventer måledata...</div>
+                    <div class="py-1 text-white">Afventer måledata...</div>
                 </div>
             </div>
 
             <div class="theme-box rounded-xl p-4 mb-4 border border-white/10 shadow-md flex flex-col items-center">
                 <canvas id="spectrum-canvas" class="w-full h-24 bg-black/40 rounded-lg"></canvas>
                 <div class="w-full flex justify-between font-mono text-[10px] text-white/40 pt-1.5 px-0.5 tracking-tighter">
-                    <span>20Hz</span><span>......................................................................</span><span>50Hz</span>
+                    <span class="text-blue-400 font-bold">20 Hz</span><span>......................................................................</span><span class="text-blue-400 font-bold">50 Hz</span>
                 </div>
             </div>
 
@@ -182,7 +182,7 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono">Hum Hunter v3.8 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.9 Live</div>
         </div>
     </div>
 
@@ -240,7 +240,7 @@
 
         window.selectOption = function(value, mainText, subText) {
             selectedEquipment = value;
-            document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px]">${mainText}</span><span class="block text-[13px] text-white/60 font-normal mt-0.5">${subText}</span>`;
+            document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px] text-white">${mainText}</span><span class="block text-[13px] text-white/60 font-normal">${subText}</span>`;
             document.getElementById('custom-select-options').classList.add('hidden');
             localStorage.setItem('humhunter_equipment', value);
             localStorage.setItem('humhunter_eq_main', mainText);
@@ -325,54 +325,51 @@
             });
         }
 
-        // 🔥 STRÆKBAR GRAF-TEGNER: Tegner et smukt, glidende spektrum på canvas
-        function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate) {
+        // 🔥 RETTET GRAF-TEGNER: Omsætter nu de akkumulerede tids-data direkte til reelle decibel-højder på en fast skala (0-35 dB)
+        function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
             const ctx = canvas.getContext('2d');
             
-            // Sæt canvas interne dimensioner baseret på CSS bredde
             canvas.width = canvas.clientWidth * window.devicePixelRatio;
             canvas.height = canvas.clientHeight * window.devicePixelRatio;
-            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Find data udelukkende for 20-50 Hz intervallet
             let points = [];
             for(let i = 1; i < bufferLength; i++) {
                 const freq = i * sampleRate / 16384;
                 if(freq >= 20 && freq <= 50) {
-                    points.push(cumulativeSpectrum[i] / 10); // Gennemsnit per sekund
+                    const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
+                    const binDb = avgByte > 0 ? (10 + (Math.log10(avgByte) * 14)) : 0;
+                    points.push(binDb);
                 }
             }
             
             if(points.length === 0) return;
-            
             const barWidth = canvas.width / points.length;
             
-            // Opret den smukke pro-akustiske farve-gradient (Blå -> Grøn -> Gul -> Orange -> Rød)
+            // Flerfarvet lineær akustisk gradient der matcher kortets farvezoner
             const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-            gradient.addColorStop(0.0, '#0ea5e9'); // Blå i bunden
-            gradient.addColorStop(0.3, '#22c55e'); // Grøn midt-lav
-            gradient.addColorStop(0.6, '#eab308'); // Gul i midten
-            gradient.addColorStop(0.8, '#f97316'); // Orange højt oppe
-            gradient.addColorStop(1.0, '#ef4444'); // Rød helt i toppen
+            gradient.addColorStop(0.0, '#0c4a6e');  // Dyb blå i bunden (<13 dB)
+            gradient.addColorStop(0.4, '#22c55e');  // Grøn midtvejs (15-20 dB)
+            gradient.addColorStop(0.68, '#eab308'); // Gul højt oppe (20-25 dB) -> Her rammer Thomas' 24 dB spids perfekt!
+            gradient.addColorStop(0.85, '#f97316'); // Orange (25-30 dB)
+            gradient.addColorStop(1.0, '#ef4444');  // Rød i den absolutte top (>30 dB)
             
-            points.forEach((energy, index) => {
-                // Skaler energien (0-255 byte) i forhold til canvas højde
-                const normalizedHeight = (energy / 255) * canvas.height * 1.5;
-                const finalHeight = Math.min(canvas.height, Math.max(2, normalizedHeight));
+            points.forEach((dbValue, index) => {
+                const maxGraphDb = 35; // Fast Y-aksegrense
+                const finalHeight = (dbValue / maxGraphDb) * canvas.height;
                 
                 const x = index * barWidth;
-                const y = canvas.height - finalHeight;
+                const y = canvas.height - Math.max(2, finalHeight);
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidth - 1.5, finalHeight);
+                ctx.fillRect(x, y, barWidth - 1.5, Math.max(2, finalHeight));
             });
         }
 
         window.startMeasurement = async function() {
-            if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
+            if (!currentLatitude || !currentLongitude) { alert("Vent vis venligst på GPS-lock."); return; }
             
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
@@ -441,22 +438,21 @@
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? globalPeakFreq + ' Hz' : 'Ingen brummen fundet';
                     
-                    // 🔥 KONVERTERING TIL SPEKTRAL-dB: Beregner og printer reelle dB i stedet for enheder
+                    // 🔥 KONSISTENTE FARVER: Genererer listen med præcise blå og grønne Tailwind farveklasser
                     const listContainer = document.getElementById('debug-peaks-list');
                     listContainer.innerHTML = '';
                     globalTopPeaksArray.forEach((p, index) => {
                         const avgByte = p.energy / (sampleCount || 1);
-                        // Logaritmisk præcis formel der matcher mockup trykket perfekt
                         const freqDb = avgByte > 0 ? Math.round(10 + (Math.log10(avgByte) * 14)) : 0;
                         
                         const row = document.createElement('div');
                         row.className = "flex justify-between py-1.5 text-[13px]";
-                        row.innerHTML = `<span><b>#${index + 1}:</b> ${p.freq} Hz</span><span class="text-sky-300 font-bold">${freqDb} dB Lp(Z)</span>`;
+                        row.innerHTML = `<span><span class="text-white"><b>#${index + 1}:</b> </span><span class="text-blue-400 font-bold">${p.freq} Hz</span></span><span class="text-green-400 font-bold">${freqDb} dB Lp(Z)</span>`;
                         listContainer.appendChild(row);
                     });
 
-                    // 🔥 TEGNER DET FLERFARVEDE SPEKTRUM
-                    drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate);
+                    // Tegner spektrum med den korrekte tids-vægtede decibel-skala
+                    drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount);
 
                     await fetchLiveWeather(currentLatitude, currentLongitude);
                 };
@@ -551,7 +547,7 @@
                 const btn = document.createElement('button');
                 if (isCovered) {
                     btn.className = "p-2.5 bg-gray-800/40 text-white/30 rounded-lg text-center text-xs font-normal cursor-not-allowed border border-transparent";
-                    btn.innerHTML = `<span class="block font-bold">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
+                    btn.innerHTML = `<span class="block font-bold text-white/30">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
                 } else {
                     btn.onclick = () => window.submitAndGoToMission(dir.lat, dir.lng);
                     btn.className = "p-2.5 bg-sky-950 text-sky-300 rounded-lg text-center text-xs font-semibold border border-sky-500/30 hover:bg-sky-900 transition-all shadow-sm";
@@ -571,7 +567,7 @@
                 selectedEquipment = savedEq;
                 const main = localStorage.getItem('humhunter_eq_main') || '📱 iPhone';
                 const sub = localStorage.getItem('humhunter_eq_sub') || '(Nyere end 3 år)';
-                document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px]">${main}</span><span class="block text-[13px] text-white/60 font-normal mt-0.5">${sub}</span>`;
+                document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px] text-white">${main}</span><span class="block text-[13px] text-white/60 font-normal">${sub}</span>`;
             }
 
             const savedEnv = localStorage.getItem('humhunter_environment') || 'Udendørs';
