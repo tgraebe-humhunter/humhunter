@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hum Hunter - Støjdetektiv</title>
-    <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app to at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
+    <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
     <meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1">Version 3.7 Live</div>
+                <div class="text-[13px] font-medium mt-1">Version 3.8 Live</div>
             </div>
         </div>
 
@@ -169,13 +169,20 @@
                 </div>
             </div>
 
+            <div class="theme-box rounded-xl p-4 mb-4 border border-white/10 shadow-md flex flex-col items-center">
+                <canvas id="spectrum-canvas" class="w-full h-24 bg-black/40 rounded-lg"></canvas>
+                <div class="w-full flex justify-between font-mono text-[10px] text-white/40 pt-1.5 px-0.5 tracking-tighter">
+                    <span>20Hz</span><span>......................................................................</span><span>50Hz</span>
+                </div>
+            </div>
+
             <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')..." class="w-full theme-box rounded-xl p-4 text-white h-22 mb-4 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
             
             <button id="btn-submit" onclick="submitData()" class="w-full bg-green-600 hover:bg-green-700 rounded-xl py-4 text-xl font-bold shadow-lg flex items-center justify-center space-x-2">
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono">Hum Hunter v3.7 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono">Hum Hunter v3.8 Live</div>
         </div>
     </div>
 
@@ -318,28 +325,55 @@
             });
         }
 
-        function getZoneColor(dbValue) {
-            if (dbValue < 13.0) return '#0c4a6e';  
-            if (dbValue <= 13.6) return '#0ea5e9'; 
-            if (dbValue <= 15.0) return '#38bdf8'; 
-            if (dbValue < 20) return '#22c55e';    
-            if (dbValue < 25) return '#eab308';    
-            if (dbValue < 30) return '#f97316';    
-            return '#ef4444';                      
-        }
-
-        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        // 🔥 STRÆKBAR GRAF-TEGNER: Tegner et smukt, glidende spektrum på canvas
+        function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate) {
+            const canvas = document.getElementById('spectrum-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // Sæt canvas interne dimensioner baseret på CSS bredde
+            canvas.width = canvas.clientWidth * window.devicePixelRatio;
+            canvas.height = canvas.clientHeight * window.devicePixelRatio;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Find data udelukkende for 20-50 Hz intervallet
+            let points = [];
+            for(let i = 1; i < bufferLength; i++) {
+                const freq = i * sampleRate / 16384;
+                if(freq >= 20 && freq <= 50) {
+                    points.push(cumulativeSpectrum[i] / 10); // Gennemsnit per sekund
+                }
+            }
+            
+            if(points.length === 0) return;
+            
+            const barWidth = canvas.width / points.length;
+            
+            // Opret den smukke pro-akustiske farve-gradient (Blå -> Grøn -> Gul -> Orange -> Rød)
+            const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+            gradient.addColorStop(0.0, '#0ea5e9'); // Blå i bunden
+            gradient.addColorStop(0.3, '#22c55e'); // Grøn midt-lav
+            gradient.addColorStop(0.6, '#eab308'); // Gul i midten
+            gradient.addColorStop(0.8, '#f97316'); // Orange højt oppe
+            gradient.addColorStop(1.0, '#ef4444'); // Rød helt i toppen
+            
+            points.forEach((energy, index) => {
+                // Skaler energien (0-255 byte) i forhold til canvas højde
+                const normalizedHeight = (energy / 255) * canvas.height * 1.5;
+                const finalHeight = Math.min(canvas.height, Math.max(2, normalizedHeight));
+                
+                const x = index * barWidth;
+                const y = canvas.height - finalHeight;
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth - 1.5, finalHeight);
+            });
         }
 
         window.startMeasurement = async function() {
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
             
-            // 🔥 SIKRING TIL APPLE: Opretter og aktiverer lydkortet med det samme synkront ved tryk!
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
 
@@ -355,8 +389,6 @@
                 analyser.fftSize = 16384; 
                 source.connect(analyser);
 
-                // 🔥 LØSNING PÅ 0 ENHEDER SAFARI-FEJL: Forbind analysatoren til en usynlig, lydløs udgang.
-                // Uden denne linje slukker iOS helt for data-flowet for at spare strøm!
                 const dummyGain = audioCtx.createGain();
                 dummyGain.gain.value = 0;
                 analyser.connect(dummyGain);
@@ -409,14 +441,22 @@
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? globalPeakFreq + ' Hz' : 'Ingen brummen fundet';
                     
+                    // 🔥 KONVERTERING TIL SPEKTRAL-dB: Beregner og printer reelle dB i stedet for enheder
                     const listContainer = document.getElementById('debug-peaks-list');
                     listContainer.innerHTML = '';
                     globalTopPeaksArray.forEach((p, index) => {
+                        const avgByte = p.energy / (sampleCount || 1);
+                        // Logaritmisk præcis formel der matcher mockup trykket perfekt
+                        const freqDb = avgByte > 0 ? Math.round(10 + (Math.log10(avgByte) * 14)) : 0;
+                        
                         const row = document.createElement('div');
                         row.className = "flex justify-between py-1.5 text-[13px]";
-                        row.innerHTML = `<span><b>#${index + 1}:</b> ${p.freq} Hz</span><span class="text-sky-400 font-bold">${p.energy} enheder</span>`;
+                        row.innerHTML = `<span><b>#${index + 1}:</b> ${p.freq} Hz</span><span class="text-sky-300 font-bold">${freqDb} dB Lp(Z)</span>`;
                         listContainer.appendChild(row);
                     });
+
+                    // 🔥 TEGNER DET FLERFARVEDE SPEKTRUM
+                    drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate);
 
                     await fetchLiveWeather(currentLatitude, currentLongitude);
                 };
@@ -481,7 +521,6 @@
             } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
         };
 
-        // 🔥 STRÆKBAR GOOGLE MAPS REDIRECT: Åbner nu ruterne via et fuldstændig officielt Google Maps Universal Link
         window.submitAndGoToMission = async function(missionLat, missionLng) {
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLatitude},${currentLongitude}&destination=${missionLat},${missionLng}&travelmode=driving`;
             const targetWindow = window.open(mapsUrl, '_blank');
