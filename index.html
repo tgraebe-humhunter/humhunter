@@ -370,7 +370,6 @@
                 const freq = i * sampleRate / 16384; 
                 if(freq >= 20 && freq <= 50) {
                     const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
-                    // 🔥 KALIBRERET SPEKTRUM OFFSET (+135) MATCHET TIL DECIBEL X
                     let binDb = Math.round(avgDbFS + 135);
                     if (freq >= 20 && freq < 30) binDb -= 8;
                     if (freq >= 41 && freq <= 45) binDb += 5;
@@ -464,7 +463,6 @@
                 audioChunks = [];
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
                 
-                // 🔥 SIKRET OG RETTET SKÆRM-2 CRASH: Hele onstop-logikken er fuldstændig luget ud for manglende variabler
                 mediaRecorder.onstop = async () => {
                     audioCtx.close();
                     
@@ -477,10 +475,8 @@
                         if(freq >= 20 && freq <= 60) {
                             const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
                             
-                            // Videnskabelig lineær transformation kalibreret mod Dayton iMM-6 + Decibel X
                             let freqDb = Math.round(avgDbFS + 135);
                             
-                            // Præ-Emphasis akustisk filtermaske
                             if (freq >= 20 && freq < 30) freqDb -= 8;
                             else if (freq >= 41 && freq <= 45) freqDb += 5;
                             
@@ -494,7 +490,6 @@
                         }
                     }
                     
-                    // Sorter listen baseret på de reelle beregnede decibel
                     rawList.sort((a,b) => b.db - a.db);
                     
                     globalTopPeaksArray = [];
@@ -539,7 +534,13 @@
                 
                 const interval = setInterval(() => {
                     timeLeft--; document.getElementById('countdown').innerText = timeLeft;
-                    analyser.getByteFrequencyData(dataArray);
+                    
+                    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                    
+                    // 🔥 CRITICAL FIX V3.16 -> v3.17: Ændret fra getByteFrequencyData til getFloatFrequencyData!
+                    // Da dataArray er en Float32Array kastede getByte en fatal lyd-fejl i baggrunden.
+                    // Det standsede koden midt i loopet, så clearInterval aldrig blev nået, og uret talte uendeligt ned under 0.
+                    analyser.getFloatFrequencyData(dataArray);
                     let intervalSum = 0, lfBins = 0;
                     
                     for(let i=1; i<bufferLength; i++) {
@@ -551,8 +552,8 @@
                     }
                     if(lfBins > 0) {
                         const avg = intervalSum / lfBins; sampleCount++;
-                        // Live forhåndsvisning kalibreret med det opdaterede og frigivne hardware-offset
-                        document.getElementById('live-db-preview').innerText = `${Math.round(22 + (avg / 255) * 55).toFixed(1)} dB Lp(Z)`;
+                        const currentLiveDb = Math.round(avg + 135);
+                        document.getElementById('live-db-preview').innerText = `${currentLiveDb.toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
                 }, 1000);
@@ -678,4 +679,3 @@
     </script>
 </body>
 </html>
-                        
