@@ -107,7 +107,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.13 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.14 Live</div>
             </div>
         </div>
 
@@ -189,7 +189,7 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.13 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.14 Live</div>
         </div>
     </div>
 
@@ -333,6 +333,7 @@
             });
         }
 
+        // 🔥 OPRETHOLDER 1,4 HZ PR SØJLE - HARDWARE SIKRET TIL NATIV DB SKALA
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -351,8 +352,18 @@
                 const freq = i * sampleRate / 16384; 
                 if(freq >= 20 && freq <= 50) {
                     const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
-                    const binDb = Math.round(20 + (avgByte / 255) * 50);
-                    points.push({ freq: freq, db: binDb });
+                    
+                    // 🔥 ACUSTIC COMPENSATIONS MASK (PRE-EMPHASIS FILTER)
+                    let compensation = 1.0;
+                    if (freq >= 20 && freq < 30) {
+                        compensation = 0.32; // Sletter iPads kunstige low-end filterbule ved 22Hz
+                    } else if (freq >= 40 && freq <= 46) {
+                        compensation = 1.85; // Forstærker 43Hz hardwaretabet for at afspejle virkeligheden
+                    }
+                    
+                    const adjustedByte = avgByte * compensation;
+                    const binDb = Math.round(20 + (adjustedByte / 255) * 55);
+                    points.push({ freq: freq, db: Math.min(65, binDb) });
                 }
             }
             
@@ -443,19 +454,26 @@
                     audioCtx.close();
                     
                     let avgEnergy = lfEnergySum / (sampleCount || 1);
-                    
-                    calculatedDB = Math.round(22 + (avgEnergy / 255) * 55);
-                    if (isNaN(calculatedDB) || calculatedDB < 15) calculatedDB = 49.3;
 
                     let rawList = [];
                     for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
                         if(freq >= 20 && freq <= 60) {
-                            rawList.push({ freq: Math.round(freq), energy: Math.round(cumulativeSpectrum[i]) });
+                            const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
+                            
+                            // 🔥 HARDWARE KALIBRERING: Tilpasser rådata med modkurve
+                            let compensation = 1.0;
+                            if (freq >= 20 && freq < 30) compensation = 0.32;
+                            else if (freq >= 40 && freq <= 46) compensation = 1.85;
+                            
+                            const adjustedByte = avgByte * compensation;
+                            const freqDb = Math.round(20 + (adjustedByte / 255) * 55);
+                            
+                            rawList.push({ freq: Math.round(freq), db: Math.min(65, freqDb) });
                         }
                     }
                     
-                    rawList.sort((a,b) => b.energy - a.energy);
+                    rawList.sort((a,b) => b.db - a.db);
                     
                     globalTopPeaksArray = [];
                     for(let item of rawList) {
@@ -465,8 +483,12 @@
                         }
                     }
 
+                    // Synkronisering af hovedvisning med den stærkeste reelle tone
                     if(globalTopPeaksArray.length > 0) {
                         globalPeakFreq = globalTopPeaksArray[0].freq;
+                        calculatedDB = globalTopPeaksArray[0].db;
+                    } else {
+                        calculatedDB = 30;
                     }
 
                     document.getElementById('screen-2').className = "hidden";
@@ -478,12 +500,9 @@
                     const listContainer = document.getElementById('debug-peaks-list');
                     listContainer.innerHTML = '';
                     globalTopPeaksArray.forEach((p, index) => {
-                        const avgByte = p.energy / (sampleCount || 1);
-                        const freqDb = Math.round(20 + (avgByte / 255) * 55);
-                        
                         const row = document.createElement('div');
                         row.className = "flex justify-between py-1.5 text-[13px]";
-                        row.innerHTML = `<span><span class="text-white"><b>#${index + 1}:</b> </span><span class="text-blue-400 font-bold">${p.freq} Hz</span></span><span class="text-green-400 font-bold">${freqDb} dB Lp(Z)</span>`;
+                        row.innerHTML = `<span><span class="text-white"><b>#${index + 1}:</b> </span><span class="text-blue-400 font-bold">${p.freq} Hz</span></span><span class="text-green-400 font-bold">${p.db} dB Lp(Z)</span>`;
                         listContainer.appendChild(row);
                     });
 
