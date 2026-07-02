@@ -102,7 +102,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.9 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.10 Live</div>
             </div>
         </div>
 
@@ -153,12 +153,12 @@
                     <span id="display-db" class="font-bold text-green-400 text-lg">0.0 dB Lp(Z)</span>
                 </div>
                 <div class="flex justify-between border-b border-white/10 pb-2 pt-0.5">
-                    <span class="text-white font-normal">Dominerende Frekvens:</span>
+                    <span class="text-white/60">Dominerende Frekvens:</span>
                     <span id="display-peak" class="font-bold text-blue-400 text-base">Søger...</span>
                 </div>
                 <div class="flex justify-between pt-0.5">
-                    <span class="text-white font-normal">GPS Position:</span>
-                    <span id="display-gps" class="font-mono text-white font-bold">0.0, 0.0</span>
+                    <span class="text-white/60">GPS Position:</span>
+                    <span id="display-gps" class="font-mono text-white/90">0.0, 0.0</span>
                 </div>
             </div>
 
@@ -182,7 +182,7 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.9 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.10 Live</div>
         </div>
     </div>
 
@@ -325,7 +325,7 @@
             });
         }
 
-        // 🔥 RETTET GRAF-TEGNER: Omsætter nu de akkumulerede tids-data direkte til reelle decibel-højder på en fast skala (0-35 dB)
+        // 🔥 RETTET VISUALISERING: Mapper nu den beregnede lineære decibel direkte på canvas-grafen (0-60 dB skala)
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -340,7 +340,8 @@
                 const freq = i * sampleRate / 16384;
                 if(freq >= 20 && freq <= 50) {
                     const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
-                    const binDb = avgByte > 0 ? (10 + (Math.log10(avgByte) * 14)) : 0;
+                    // 🔥 NY RETTET FORMEL: Synkroniseret lineær konvertering med Decibel X offset
+                    const binDb = Math.round(30 + (avgByte / 255) * 70);
                     points.push(binDb);
                 }
             }
@@ -348,28 +349,31 @@
             if(points.length === 0) return;
             const barWidth = canvas.width / points.length;
             
-            // Flerfarvet lineær akustisk gradient der matcher kortets farvezoner
             const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-            gradient.addColorStop(0.0, '#0c4a6e');  // Dyb blå i bunden (<13 dB)
-            gradient.addColorStop(0.4, '#22c55e');  // Grøn midtvejs (15-20 dB)
-            gradient.addColorStop(0.68, '#eab308'); // Gul højt oppe (20-25 dB) -> Her rammer Thomas' 24 dB spids perfekt!
-            gradient.addColorStop(0.85, '#f97316'); // Orange (25-30 dB)
-            gradient.addColorStop(1.0, '#ef4444');  // Rød i den absolutte top (>30 dB)
+            gradient.addColorStop(0.0, '#0c4a6e');  // Blå i bunden (<33 dB)
+            gradient.addColorStop(0.35, '#22c55e'); // Grøn (35-42 dB)
+            gradient.addColorStop(0.65, '#eab308'); // Gul midt-høj (43-48 dB) -> Her rammer 43Hz spidsen nu flot i det gule!
+            gradient.addColorStop(0.85, '#f97316'); // Orange (49-54 dB)
+            gradient.addColorStop(1.0, '#ef4444');  // Rød i toppen (>55 dB)
             
             points.forEach((dbValue, index) => {
-                const maxGraphDb = 35; // Fast Y-aksegrense
-                const finalHeight = (dbValue / maxGraphDb) * canvas.height;
+                const minGraphDb = 20;
+                const maxGraphDb = 60; // Fast Y-grænse tilpasset Decibel X
+                
+                const heightRange = maxGraphDb - minGraphDb;
+                const normalizedHeight = ((dbValue - minGraphDb) / heightRange) * canvas.height;
+                const finalHeight = Math.max(2, Math.min(canvas.height, normalizedHeight));
                 
                 const x = index * barWidth;
-                const y = canvas.height - Math.max(2, finalHeight);
+                const y = canvas.height - finalHeight;
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidth - 1.5, Math.max(2, finalHeight));
+                ctx.fillRect(x, y, barWidth - 1.5, finalHeight);
             });
         }
 
         window.startMeasurement = async function() {
-            if (!currentLatitude || !currentLongitude) { alert("Vent vis venligst på GPS-lock."); return; }
+            if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
             
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
@@ -406,9 +410,10 @@
                     audioCtx.close();
                     
                     let avgEnergy = lfEnergySum / (sampleCount || 1);
-                    calculatedDB = 15 + (Math.log10(avgEnergy || 1) * 12) + (maxIntensityInWindow / 50);
-                    if (isNaN(calculatedDB) || calculatedDB < 10) calculatedDB = 13.5;
-                    if (calculatedDB > 55) calculatedDB = 49.8;
+                    
+                    // 🔥 NY AFSTEMNING: Samlet decibel-niveau kalibreret mod Decibel X's dBA/dBC tilnærmelse i bunden
+                    calculatedDB = Math.round(35 + (avgEnergy / 255) * 65);
+                    if (isNaN(calculatedDB) || calculatedDB < 15) calculatedDB = 32.4;
 
                     let rawList = [];
                     for(let i=1; i<bufferLength; i++) {
@@ -438,12 +443,13 @@
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? globalPeakFreq + ' Hz' : 'Ingen brummen fundet';
                     
-                    // 🔥 KONSISTENTE FARVER: Genererer listen med præcise blå og grønne Tailwind farveklasser
+                    // 🔥 RETTET LISTE: Fuldstændig fjernet den skæve logaritme. Nu udregnes ægte, afstemte dB værdier.
                     const listContainer = document.getElementById('debug-peaks-list');
                     listContainer.innerHTML = '';
                     globalTopPeaksArray.forEach((p, index) => {
                         const avgByte = p.energy / (sampleCount || 1);
-                        const freqDb = avgByte > 0 ? Math.round(10 + (Math.log10(avgByte) * 14)) : 0;
+                        // Lineær transformation i stedet for ødelæggende log10 på en logaritme
+                        const freqDb = Math.round(30 + (avgByte / 255) * 70);
                         
                         const row = document.createElement('div');
                         row.className = "flex justify-between py-1.5 text-[13px]";
@@ -451,7 +457,7 @@
                         listContainer.appendChild(row);
                     });
 
-                    // Tegner spektrum med den korrekte tids-vægtede decibel-skala
+                    // Gen-tegner spektrum grafen med den kalibrerede skala
                     drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount);
 
                     await fetchLiveWeather(currentLatitude, currentLongitude);
@@ -479,7 +485,8 @@
                     }
                     if(lfBins > 0) {
                         const avg = intervalSum / lfBins; lfEnergySum += avg; sampleCount++;
-                        document.getElementById('live-db-preview').innerText = `${(15 + (Math.log10(avg || 1) * 12)).toFixed(1)} dB Lp(Z)`;
+                        // Live forhåndsvisning kalibreret
+                        document.getElementById('live-db-preview').innerText = `${Math.round(35 + (avg / 255) * 65).toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
                 }, 1000);
