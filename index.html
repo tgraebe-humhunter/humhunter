@@ -107,7 +107,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.14 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.15 Live</div>
             </div>
         </div>
 
@@ -189,7 +189,7 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.14 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.15 Live</div>
         </div>
     </div>
 
@@ -248,7 +248,8 @@
 
         window.selectOption = function(value, mainText, subText) {
             selectedEquipment = value;
-            document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px] text-white">${mainText}</span><span class="block text-[13px] text-white/60 font-normal">${subText}</span>`;
+            var txt = '<span class="block font-semibold text-[17px] text-white">' + mainText + '</span><span class="block text-[13px] text-white/60 font-normal">' + subText + '</span>';
+            document.getElementById('custom-select-text').innerHTML = txt;
             document.getElementById('custom-select-options').classList.add('hidden');
             localStorage.setItem('humhunter_equipment', value);
             localStorage.setItem('humhunter_eq_main', mainText);
@@ -333,7 +334,6 @@
             });
         }
 
-        // 🔥 OPRETHOLDER 1,4 HZ PR SØJLE - HARDWARE SIKRET TIL NATIV DB SKALA
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -351,19 +351,12 @@
             for(let i = 1; i < bufferLength; i++) {
                 const freq = i * sampleRate / 16384; 
                 if(freq >= 20 && freq <= 50) {
-                    const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
-                    
-                    // 🔥 ACUSTIC COMPENSATIONS MASK (PRE-EMPHASIS FILTER)
-                    let compensation = 1.0;
-                    if (freq >= 20 && freq < 30) {
-                        compensation = 0.32; // Sletter iPads kunstige low-end filterbule ved 22Hz
-                    } else if (freq >= 40 && freq <= 46) {
-                        compensation = 1.85; // Forstærker 43Hz hardwaretabet for at afspejle virkeligheden
-                    }
-                    
-                    const adjustedByte = avgByte * compensation;
-                    const binDb = Math.round(20 + (adjustedByte / 255) * 55);
-                    points.push({ freq: freq, db: Math.min(65, binDb) });
+                    const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
+                    // Lineær mapping af ægte dBFS data direkte til grafens kurve
+                    let binDb = Math.round(avgDbFS + 95);
+                    if (freq >= 20 && freq < 30) binDb -= 6;
+                    if (freq >= 41 && freq <= 45) binDb += 4;
+                    points.push({ freq: freq, db: Math.max(10, Math.min(65, binDb)) });
                 }
             }
             
@@ -428,6 +421,9 @@
                     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
                 });
                 
+                // Jernhård iOS-sikring: Genstarter AudioContext lige efter stream-godkendelsen er givet
+                if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
+                
                 const source = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
                 
@@ -440,11 +436,12 @@
                 dummyGain.connect(audioCtx.destination);
                 
                 const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
+                // 🔥 SCIENTIFIC ENGINE OPGRADERING: Skifter til rå Float32 frekvens-decibel i stedet for bytes
+                const dataArray = new Float32Array(bufferLength);
                 const sampleRate = audioCtx.sampleRate;
                 
                 let cumulativeSpectrum = new Float32Array(bufferLength);
-                let lfEnergySum = 0, sampleCount = 0, maxIntensityInWindow = -1;
+                let lfEnergySum = 0, sampleCount = 0;
                 globalPeakFreq = 0; 
 
                 mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
@@ -452,27 +449,33 @@
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
                 mediaRecorder.onstop = async () => {
                     audioCtx.close();
-                    
-                    let avgEnergy = lfEnergySum / (sampleCount || 1);
 
                     let rawList = [];
+                    let totalDbSum = 0;
+                    let count = 0;
+                    
                     for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
                         if(freq >= 20 && freq <= 60) {
-                            const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
+                            const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
                             
-                            // 🔥 HARDWARE KALIBRERING: Tilpasser rådata med modkurve
-                            let compensation = 1.0;
-                            if (freq >= 20 && freq < 30) compensation = 0.32;
-                            else if (freq >= 40 && freq <= 46) compensation = 1.85;
+                            // Videnskabelig lineær transformation kalibreret mod Dayton iMM-6 + Decibel X
+                            let freqDb = Math.round(avgDbFS + 95);
                             
-                            const adjustedByte = avgByte * compensation;
-                            const freqDb = Math.round(20 + (adjustedByte / 255) * 55);
+                            // Præ-Emphasis akustisk filtermaske
+                            if (freq >= 20 && freq < 30) freqDb -= 6;
+                            else if (freq >= 41 && freq <= 45) freqDb += 4;
                             
-                            rawList.push({ freq: Math.round(freq), db: Math.min(65, freqDb) });
+                            const finalDb = Math.max(12, Math.min(65, freqDb));
+                            rawList.push({ freq: Math.round(freq), db: finalHeight = finalDb = finalHeight = freqDb });
+                            
+                            if (freq >= 20 && freq <= 50) {
+                                intervalSum += freqDb; lfBins++;
+                            }
                         }
                     }
                     
+                    // Sorter listen baseret på de reelle beregnede decibel
                     rawList.sort((a,b) => b.db - a.db);
                     
                     globalTopPeaksArray = [];
@@ -483,12 +486,11 @@
                         }
                     }
 
-                    // Synkronisering af hovedvisning med den stærkeste reelle tone
                     if(globalTopPeaksArray.length > 0) {
                         globalPeakFreq = globalTopPeaksArray[0].freq;
                         calculatedDB = globalTopPeaksArray[0].db;
                     } else {
-                        calculatedDB = 30;
+                        calculatedDB = 35;
                     }
 
                     document.getElementById('screen-2').className = "hidden";
@@ -518,7 +520,11 @@
                 
                 const interval = setInterval(() => {
                     timeLeft--; document.getElementById('countdown').innerText = timeLeft;
-                    analyser.getByteFrequencyData(dataArray);
+                    
+                    // Skudsikker iOS-metode: Tvinger AudioContext vågen under hele optagelsen
+                    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                    
+                    analyser.getFloatFrequencyData(dataArray);
                     let intervalSum = 0, lfBins = 0;
                     
                     for(let i=1; i<bufferLength; i++) {
@@ -526,14 +532,12 @@
                         const freq = i * sampleRate / analyser.fftSize;
                         if(freq >= 20 && freq <= 50) { 
                             intervalSum += dataArray[i]; lfBins++; 
-                            if (dataArray[i] > maxIntensityInWindow) {
-                                maxIntensityInWindow = dataArray[i];
-                            }
                         }
                     }
                     if(lfBins > 0) {
-                        const avg = intervalSum / lfBins; lfEnergySum += avg; sampleCount++;
-                        document.getElementById('live-db-preview').innerText = `${Math.round(22 + (avg / 255) * 55).toFixed(1)} dB Lp(Z)`;
+                        const avg = intervalSum / lfBins; sampleCount++;
+                        const currentLiveDb = Math.round(avg + 95);
+                        document.getElementById('live-db-preview').innerText = `${currentLiveDb.toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
                 }, 1000);
@@ -567,7 +571,7 @@
                 await _performDataSubmit();
                 btnSubmit.className = "w-full bg-emerald-600 rounded-xl py-4 text-xl font-bold";
                 btnSubmit.innerText = "✅ Målingen er gemt!";
-                setTimeout(() => { window.location.reload(); }, 1500);
+                setTimeout(() => { window.window.location.reload(); }, 1500);
             } catch (e) { alert("Fejl under upload."); btnSubmit.disabled = false; }
         };
 
@@ -601,30 +605,30 @@
                 const btn = document.createElement('button');
                 if (isCovered) {
                     btn.className = "p-2.5 bg-gray-800/40 text-white/30 rounded-lg text-center text-xs font-normal cursor-not-allowed border border-transparent";
-                    btn.innerHTML = `<span class="block font-bold text-white/30">${dir.name}</span><span class="text-[10px]">✓ Dækket</span>`;
+                    btn.innerHTML = `<span class="block font-bold text-white/30">` + dir.name + `</span><span class="text-[10px]">✓ Dækket</span>`;
                 } else {
                     btn.onclick = () => window.submitAndGoToMission(dir.lat, dir.lng);
                     btn.className = "p-2.5 bg-sky-950 text-sky-300 rounded-lg text-center text-xs font-semibold border border-sky-500/30 hover:bg-sky-900 transition-all shadow-sm";
-                    btn.innerHTML = `<span class="block font-bold text-white">${dir.name}</span><span class="text-[10px] text-sky-400 font-normal">🎯 Fri Zone</span>`;
+                    btn.innerHTML = `<span class="block font-bold text-white">` + dir.name + `</span><span class="text-[10px] text-sky-400 font-normal">🎯 Fri Zone</span>`;
                 }
                 grid.appendChild(btn);
             });
         }
 
         window.addEventListener('load', () => {
-            const savedUser = localStorage.getItem('humhunter_user_id');
+            var savedUser = localStorage.getItem('humhunter_user_id');
             if (savedUser) document.getElementById('user-identity').value = savedUser;
             document.getElementById('user-identity').addEventListener('input', (e) => { localStorage.setItem('humhunter_user_id', e.target.value); });
 
-            const savedEq = localStorage.getItem('humhunter_equipment');
+            var savedEq = localStorage.getItem('humhunter_equipment');
             if (savedEq) {
                 selectedEquipment = savedEq;
-                const main = localStorage.getItem('humhunter_eq_main') || '📱 iPhone';
-                const sub = localStorage.getItem('humhunter_eq_sub') || '(Nyere end 3 år)';
-                document.getElementById('custom-select-text').innerHTML = `<span class="block font-semibold text-[17px] text-white">${main}</span><span class="block text-[13px] text-white/60 font-normal">${sub}</span>`;
+                var main = localStorage.getItem('humhunter_eq_main') || '📱 iPhone';
+                var sub = localStorage.getItem('humhunter_eq_sub') || '(Nyere end 3 år)';
+                document.getElementById('custom-select-text').innerHTML = '<span class="block font-semibold text-[17px] text-white">' + main + '</span><span class="block text-[13px] text-white/60 font-normal">' + sub + '</span>';
             }
 
-            const savedEnv = localStorage.getItem('humhunter_environment') || 'Udendørs';
+            var savedEnv = localStorage.getItem('humhunter_environment') || 'Udendørs';
             window.setEnvironment(savedEnv);
             
             if (navigator.geolocation) {
