@@ -107,7 +107,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.12 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.13 Live</div>
             </div>
         </div>
 
@@ -189,7 +189,7 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.12 Live</div>
+            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.13 Live</div>
         </div>
     </div>
 
@@ -333,7 +333,6 @@
             });
         }
 
-        // 🔥 DETALJERET SKALERING OG 5HZ-TIKS TIL CANVASS SPEKTRUM
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -352,7 +351,6 @@
                 const freq = i * sampleRate / 16384; 
                 if(freq >= 20 && freq <= 50) {
                     const avgByte = cumulativeSpectrum[i] / (sampleCount || 1);
-                    // 🔥 KALIBRERING MATCHET 1:1 MED DECIBEL X: Giver fuldt udslag op til ~55-60 dB
                     const binDb = Math.round(20 + (avgByte / 255) * 50);
                     points.push({ freq: freq, db: binDb });
                 }
@@ -361,17 +359,16 @@
             if(points.length === 0) return;
             const barWidth = canvas.width / points.length;
             
-            // Flerfarvet akustisk equalizer-gradient
             const gradient = ctx.createLinearGradient(0, graphHeight, 0, 0);
-            gradient.addColorStop(0.0, '#0c4a6e');   // Mørkeblå i bunden
-            gradient.addColorStop(0.35, '#22c55e');  // Grøn midtvejs
-            gradient.addColorStop(0.65, '#eab308');  // Gul (omkring 43-46 dB)
-            gradient.addColorStop(0.85, '#f97316');  // Orange (47-53 dB)
-            gradient.addColorStop(1.0, '#ef4444');   // Rød i den absolutte top (>54 dB)
+            gradient.addColorStop(0.0, '#0c4a6e');   
+            gradient.addColorStop(0.35, '#22c55e');  
+            gradient.addColorStop(0.65, '#eab308');  
+            gradient.addColorStop(0.85, '#f97316');  
+            gradient.addColorStop(1.0, '#ef4444');   
             
             points.forEach((pt, index) => {
                 const minGraphDb = 15;
-                const maxGraphDb = 60; // Justeret akse-top, så 49 dB fra Decibel X rammer helt oppe i det orange/røde felt!
+                const maxGraphDb = 60; 
                 const heightRange = maxGraphDb - minGraphDb;
                 
                 const finalHeight = ((pt.db - minGraphDb) / heightRange) * graphHeight;
@@ -379,10 +376,9 @@
                 const y = graphHeight - Math.max(2, finalHeight);
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidth - 0.5, Math.max(2, finalHeight));
+                ctx.fillRect(x, y, barWidth - 0.5, finalHeight);
             });
             
-            // Tegn x-akse baselinje
             ctx.strokeStyle = 'rgba(255,255,255,0.2)';
             ctx.lineWidth = 1 * dpr;
             ctx.beginPath();
@@ -390,7 +386,6 @@
             ctx.lineTo(canvas.width, graphHeight);
             ctx.stroke();
             
-            // Aksetekster og tiks
             ctx.fillStyle = 'rgba(255,255,255,0.6)';
             ctx.font = Math.round(10 * dpr) + 'px -apple-system, BlinkMacSystemFont, monospace';
             ctx.textAlign = 'center';
@@ -413,9 +408,6 @@
         window.startMeasurement = async function() {
             if (!currentLatitude || !currentLongitude) { alert("Vent venligst på GPS-lock."); return; }
             
-            // 🔥 RETTELSE: iOS SAFARI SIKRING
-            // Safari på iOS understøtter IKKE en fftSize på 32768. Det fik lyd-arrayet til at crashe totalt (hvilket gav de låste 15 dB i v3.11).
-            // Vi tvinger den tilbage på den maksimale hardware-understøttede grænse: 16384, hvilket giver en uovertruffen, fejlfri datastrøm!
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
 
@@ -452,7 +444,6 @@
                     
                     let avgEnergy = lfEnergySum / (sampleCount || 1);
                     
-                    // 🔥 NY AFSTEMT TOTAL-DB: Rammer præcis det samlede tryk nu jf. dine screenshots
                     calculatedDB = Math.round(22 + (avgEnergy / 255) * 55);
                     if (isNaN(calculatedDB) || calculatedDB < 15) calculatedDB = 49.3;
 
@@ -484,7 +475,6 @@
                     document.getElementById('display-db').innerText = `${calculatedDB.toFixed(1)} dB Lp(Z)`;
                     document.getElementById('display-peak').innerText = globalPeakFreq >= 20 ? globalPeakFreq + ' Hz' : 'Ingen brummen fundet';
                     
-                    // 🔥 RETTET DB RE-MAPPING: Top 5 listen og spektrogrammet følges nu 1:1 ad med ægte dB udregninger
                     const listContainer = document.getElementById('debug-peaks-list');
                     listContainer.innerHTML = '';
                     globalTopPeaksArray.forEach((p, index) => {
@@ -497,7 +487,6 @@
                         listContainer.appendChild(row);
                     });
 
-                    // Tegner spektrum med indbygget x-akse og synkroniserede værdier
                     drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount);
 
                     await fetchLiveWeather(currentLatitude, currentLongitude);
