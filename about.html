@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hum Hunter - Projekt Rapport & Vidensgrundlag</title>
+    <meta name="description" content="Videnskabeligt grundlag, brugervejledning og politisk kontekst bag lavfrekvent støjmåling i Odsherred.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #176B87;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .theme-box { background-color: #0B2F3D; }
+        .accent-border { border-color: rgba(56, 189, 248, 0.2); }
+    </style>
+</head>
+<body class="text-white min-h-screen flex justify-center p-4">
+
+    <div class="w-full max-w-2xl flex flex-col pb-12 space-y-8">
+        
+        <!-- Header -->
+        <div class="text-center py-6 border-b border-white/10">
+            <h1 class="text-4xl font-light tracking-wide text-white">Hum Hunter</h1>
+            <p class="text-sky-300 font-mono text-sm mt-2">Projektrapport &amp; Teknisk Vidensgrundlag — Status Sommer 2026</p>
+        </div>
+
+        <!-- Section: WHY -->
+        <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
+            <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
+                <span class="text-2xl">🎯</span>
+                <h2 class="text-2xl font-semibold tracking-wide">WHY: Formål &amp; Vision</h2>
+            </div>
+            <p class="text-white/80 leading-relaxed text-sm">
+                Formålet med <span class="text-sky-300 font-semibold">Hum Hunter</span> er at skabe et folkeligt, borgerdrevet værktøj til opsporing og kortlægning af lavfrekvente støjkilder (LF), som generer borgere, dyr og natur. 
+            </p>
+            <p class="text-white/80 leading-relaxed text-sm">
+                Den igangværende elektrificering af vores samfund er fantastisk, og vi hilser elbiler, vindmøller og store industrielle varmepumper velkommen som nødvendige fremskridt. Men det grønne skifte må ikke ske på bekostning af folkesundheden. Lavfrekvent støj og brummetoner kan og skal begrænses ved kilden via bedre støjisolering og vibrationsdæmpning. Vores vision er at give borgerne stemme og data i mødet med myndighederne.
+            </p>
+        </section>
+
+        <!-- Section: HOW TO USE -->
+        <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
+            <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
+                <span class="text-2xl">🎙️</span>
+                <h2 class="text-2xl font-semibold tracking-wide">HOW TO USE: Brugervejledning</h2>
+            </div>
+            <div class="space-y-3 text-white/80 text-sm leading-relaxed">
+                <p>
+                    At måle dyb bas og brummen kræver akustisk disciplin, da lavfrekvente lydbølger opfører sig drastisk anderledes end almindelig støj. Følg disse fire principper for præcise målinger:
+                </p>
+                <ul class="list-disc list-inside space-y-2 pl-2 text-white/90">
+                    <li><strong class="text-sky-300">Tag højde for stående bølger:</strong> En brummetone på f.eks. 43 Hz har en fysisk bølgelængde på præcis 8 meter. Når bølgen rammer dit hus, opstår der rum-resonans (interferens), hvor lyden forstærker sig selv voldsomt i hjørner og tæt på vægge, mens den kan være helt væk midt i rummet. </li>
+                    <li><strong class="text-sky-300">Foretag flere målinger:</strong> Mål forskellige steder i rummet og på forskellige tidspunkter af døgnet for at skabe et retvisende, ensartet billede.</li>
+                    <li><strong class="text-sky-300">Udeluk baggrundsstøj:</strong> Vent til biler er kørt forbi, og undgå bevægelse under den 10 sekunder lange optagelse.</li>
+                    <li><strong class="text-sky-300">Brug optimeret hardware:</strong> Hvis du bruger telefonens indbyggede mikrofon, bør enheden være nyere end 3 år for at sikre moderne sensor-følsomhed. Har du en ældre telefon eller ønsker du professionel præcision, anbefales en kalibreret ekstern målemikrofon (f.eks. <span class="italic">Dayton iMM-6</span>) monteret med vindhætte.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section: WHAT -->
+        <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
+            <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
+                <span class="text-2xl">🔬</span>
+                <h2 class="text-2xl font-semibold tracking-wide">WHAT: Den akademiske tilgang</h2>
+            </div>
+            <p class="text-white/80 leading-relaxed text-sm">
+                Kritikere og traditionelle akustikere hævder ofte hårdnakket, at <span class="italic">"man ikke kan måle lavfrekvent støj med en smartphone."</span> Det har de historisk set haft ret i, da standard-apps foretager brede gennemsnitsberegninger og gætter sig frem på upræcise bytes. Hum Hunter adskiller sig fundamentalt ved at være akademisk skudsikker og forsigtig:
+            </p>
+            
+            <div class="bg-black/20 p-4 rounded-xl space-y-3 border border-white/5">
+                <h3 class="text-sm font-bold text-sky-400 font-mono uppercase tracking-wider">Teknologiske gennembrud i Hum Hunter:</h3>
+                <ul class="list-disc list-inside space-y-2 text-xs text-white/80 pl-1">
+                    <li><strong class="text-white">Ingen komprimeret byte-gætteri:</strong> Appen trækker ubehandlede, rå <span class="font-mono text-sky-300">Float32</span> decimalværdier i dBFS (Decibel Relative to Full Scale) direkte ud af lydchippen via Web Audio API.</li>
+                    <li><strong class="text-white">Højopløseligt spektrum (16.384 FFT Size):</strong> Giver en knivskarp frekvensadskillelse med en båndopløsning på helt ned til ~1,4 Hz pr. søjle. Det forhindrer, at smalle toner flyder sammen til en udefinerbar masse.</li>
+                    <li><strong class="text-white">Målrettet Hum-Isolator:</strong> Vi har zoomet software-analysevinduet ind til udelukkende at fange båndet <span class="text-blue-400 font-bold">40–55 Hz</span>. Dette klipper effektivt bygningsvibrationer og håndrystelser (typisk omkring 22 Hz) ud af ligningen.</li>
+                    <li><strong class="text-white">Dynamisk Auto-Scaling:</strong> Grafen tilpasser sig automatisk rummets specifikke minimums- og maksimumstryk. Det trækker den reelle brummetone (f.eks. 43 Hz) op som en tydelig, isoleret spids.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section: NEXT STEP -->
+        <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
+            <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
+                <span class="text-2xl">⚖️</span>
+                <h2 class="text-2xl font-semibold tracking-wide">NEXT STEP: Myndigheder &amp; Klagesager</h2>
+            </div>
+            <p class="text-white/80 leading-relaxed text-sm">
+                Behovet for uafhængige initiativer står mere tydeligt end nogensinde. Den **2. juli 2026** traf Odsherred Kommune afgørelse om <span class="text-amber-400 font-semibold">Ikke-påbud (Sag: 09.00.00-K02-26-5)</span> vedrørende den lavfrekvente støj fra varmeværket på Energivej 2 i Grevinge. 
+            </p>
+            <blockquote class="bg-black/30 border-l-4 border-sky-400 p-3.5 my-3 rounded-r-xl text-xs text-white/70 leading-relaxed">
+                <strong>Uddrag fra kommunens afgørelse:</strong><br>
+                <em>"Alle A(LF)-værdierne ligger omkring 0 dB eller under... Målingerne ligger langt fra det niveau, hvor Miljøstyrelsens vejledende grænse på 20 dB A-vægtet lavfrekvent støj indendørs er overskredet... På baggrund af de gennemførte målinger meddeles afgørelse om Ikke-påbud til varmeværket."</em>
+            </blockquote>
+            <p class="text-white/80 leading-relaxed text-sm">
+                Denne sag udstiller det fundamentale problem i det nuværende lovgrundlag: Myndighederne anvender brede, gennemsnitlige $A(LF)$-vægtninger over hele frekvensbåndet (10–160 Hz). Hvis en borger plages af en konstant, smalsporet og intens brummetone på præcis 43 Hz, drukner denne tone fuldstændig i kommunens gennemsnitsberegninger. 
+            </p>
+            <p class="text-white/80 leading-relaxed text-sm">
+                Derfor er der et akut behov for at understøtte og udbygge projekter som <span class="text-sky-300">humhunter.dk</span>, <span class="text-sky-300">plan-b-project.eu</span> samt Lektor Henning Rosqvists forskningsprojekt på <span class="text-sky-300">Zealand.dk</span>, så vi i fællesskab kan presse på for en modernisering af myndighedernes målemetoder i LF-båndet.
+            </p>
+        </section>
+
+        <!-- Section: CREDITS -->
+        <footer class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-3 text-sm">
+            <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
+                <span class="text-2xl">🌱</span>
+                <h2 class="text-xl font-semibold tracking-wide">Credits &amp; Bidragsydere</h2>
+            </div>
+            <div class="grid grid-cols-1 gap-3 text-white/80 pt-1">
+                <div>
+                    <span class="block font-bold text-white">Idé, softwareudvikling &amp; finansiering:</span>
+                    <span class="text-sky-300">Thomas Græbe</span>, Arkitekt MAA (Kelstrup, Vig).
+                </div>
+                <div>
+                    <span class="block font-bold text-white">Akustisk og videnskabelig sparring:</span>
+                    <span class="text-emerald-400">Henning Rosqvist</span>, Lektor v. Produktionsteknologuddannelsen, <span class="italic text-white/60">zealand.dk</span>.
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+</body>
+</html>
