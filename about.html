@@ -22,66 +22,81 @@
         <!-- Header -->
         <div class="text-center py-6 border-b border-white/10">
             <h1 class="text-4xl font-light tracking-wide text-white">Hum Hunter</h1>
-            <p class="text-sky-300 font-mono text-sm mt-2">Projektrapport &amp; Teknisk Vidensgrundlag — Status Sommer 2026</p>
+            <p class="text-sky-300 font-mono text-sm mt-2">Projektrapport &amp; Teknisk Vidensgrundlag — Version 2.1</p>
         </div>
 
-        <!-- Section: Formål & Vision -->
+        <!-- 🔥 ØVERSTE KNAP: Tilbage til måling -->
+        <div>
+            <a href="index.html" class="w-full bg-[#0B2F3D] hover:bg-[#114357] text-white border border-white/10 rounded-xl py-4 text-center font-bold shadow-lg transition-all block active:scale-95 text-base sm:text-lg flex items-center justify-center space-x-2">
+                <span>🎙️</span> <span>Tilbage til måling</span>
+            </a>
+        </div>
+
+        <!-- Sektion: Formål & Vision -->
         <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
             <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
                 <span class="text-2xl">🎯</span>
                 <h2 class="text-2xl font-semibold tracking-wide">Formål &amp; Vision</h2>
             </div>
-            <p class="text-white/80 leading-relaxed text-sm">
-                Formålet med <span class="text-sky-300 font-semibold">Hum Hunter</span> er at skabe et folkeligt, borgerdrevet værktøj til opsporing og kortlægning af lavfrekvente støjkilder (LF), som generer borgere, dyr og natur. 
-            </p>
-            <p class="text-white/80 leading-relaxed text-sm">
-                Den igangværende elektrificering af vores samfund er fantastisk, og vi hilser elbiler, vindmøller og store industrielle varmepumper velkommen som nødvendige fremskridt. Men det grønne skifte må ikke ske på bekostning af folkesundheden. Lavfrekvent støj og brummetoner kan og skal begrænses ved kilden via bedre støjisolering og vibrationsdæmpning. Vores vision er at give borgerne stemme og data i mødet med myndighederne.
-            </p>
+            <div class="space-y-4 text-white/80 leading-relaxed text-sm">
+                <p>
+                    <strong class="text-white">Formål:</strong> Formålet med Hum Hunter er at oplyse om udbredelsen af lavfrekvent støj (LF). Dette skal ske via kortlægning af støjen i et afgrænset frekvensområde, som er målrettet Hum-støj. Det es Hum Hunters opfattelse, at LF og Hum(LF) støj skal stoppes ved kilden. Derfor er Hum Hunter-kortet vigtigt for at visualisere potentielle kilder til Hum(LF). I dag har ingen kontrolførende myndighed det rette værktøj eller ressourcer til at lave et sådant Hum-kort.
+                </p>
+                <p>
+                    <strong class="text-white">Vision:</strong> Hum Hunters vision er at kunne visualisere og italesætte over for ansvarlige myndigheder, at det er tid til en gennemgribende fornyelse på området. Lavfrekvent støj opfattes kun bevidst hos ca. 5% af befolkningen, men det påvirker alle med let ubehag, søvnbesvær, koncentrationsforstyrrelse, indlæringsbesvær og fejldiagnosticering med ADHD (fordi der bare ikke kan blive ro i hovedet). Indsamlede målinger og kort vil indgå i det EU-støttede <span class="text-sky-300">plan-b-project.eu</span>, som undersøger de pt. ukendte konsekvenser i naturen.
+                </p>
+            </div>
         </section>
 
-        <!-- Section: Brugervejledning -->
+        <!-- Sektion: Brugervejledning -->
         <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
             <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
                 <span class="text-2xl">🎙️</span>
                 <h2 class="text-2xl font-semibold tracking-wide">Brugervejledning</h2>
             </div>
-            <div class="space-y-3 text-white/80 text-sm leading-relaxed">
+            <div class="space-y-4 text-white/80 text-sm leading-relaxed">
                 <p>
-                    Tenk på frekvensanalysen som et mikroskop: Jo højere opløsning vi bruger, desto skarpere bliver billedet. Hum Hunter anvender en stor FFT-opløsning for at adskille de dybe frekvenser med stor nøjagtighed, så de ikke smelter sammen i en uklar grød.
+                    Når du måler indendørs, kan der opstå stående bølger i rummet (rum-resonans), hvilket er områder, hvor støjen er kraftigst. Det éderfor vigtigt, at du inden en måling subjektivt lytter dig frem til, hvor støjen er kraftigst. Her skal du placere din mikrofon. 
                 </p>
                 <p>
-                    Når du måler indendørs, kan stående bølger (rum-resonans) forstærke lyden betydeligt nær vægge og i hjørner, hvilket kan give højere måleresultater end udendørs. For at skabe et ensartet og dokumenterbart billede, er det derfor vigtigt at følge disse principper:
+                    For at opnå så valide (sikre) data som muligt, er det vigtigt, at du følger disse tre punkter:
                 </p>
-                <ul class="list-disc list-inside space-y-2 pl-2 text-white/90">
-                    <li><strong class="text-sky-300">Foretag flere målinger:</strong> Mål forskellige steder i rummet og på forskellige tidspunkter af døgnet.</li>
-                    <li><strong class="text-sky-300">Udeluk midlertidig støj:</strong> Vent til biler i nærområdet er kørt forbi, og hold telefonen helt i ro under den 10 sekunder lange optagelse.</li>
-                    <li><strong class="text-sky-300">Brug optimeret hardware:</strong> Hvis du bruger telefonens indbyggede mikrofon, bør enheden være moderne for at sikre tilstrækkelig sensor-følsomhed i de dybe oktaver. Hvis udstyret er ældre, eller hvis du ønsker fuldstændig præcision uden hardware-begrænsninger, anbefales en kalibreret ekstern målemikrofon monteret med vindhætte.</li>
+                <ul class="list-disc list-inside space-y-3 pl-2 text-white/90">
+                    <li>
+                        <strong class="text-sky-300">Foretag flere målinger:</strong> Mål forskellige steder i rummet og på forskellige tidspunkter af døgnet for at skabe et ensartet, nuanceret billede.
+                    </li>
+                    <li>
+                        <strong class="text-sky-300">Udeluk midlertidig støj / Baggrundsstøj:</strong> For at sikre, at det kun er den genererende Hum-støj der måles, skal der være så stille som muligt. Du kan med fordel afbryde strømmen i huset på din eltavle for at sikre, at elapparater ikke forstyrrer målingen. Mikrofonen skal holdes helt i ro under den 10 sekunder lange optagelse.
+                    </li>
+                    <li>
+                        <strong class="text-sky-300">Optimal måling:</strong> Vær bevidst om, hvor mikrofonen er placeret på dein måleenhed, hvad enten det er en Smartphone eller en iPad. Brug en så ny måleenhed som muligt for at sikre den absolut bedste sensor-følsomhed i de dybe frekvensbånd.
+                    </li>
                 </ul>
             </div>
         </section>
 
-        <!-- Section: Den akademiske tilgang -->
+        <!-- Sektion: Den akademiske tilgang -->
         <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
             <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
                 <span class="text-2xl">🔬</span>
                 <h2 class="text-2xl font-semibold tracking-wide">Den akademiske tilgang</h2>
             </div>
             <p class="text-white/80 leading-relaxed text-sm">
-                Traditionelle målinger overser ofte de specifikke brummetoner, som plager det menneskelige øre, fordi de baserer sig på brede gennemsnit. Hum Hunter adskiller sig fundamentalt ved at registrere den pure, ufiltrerede sandhed i LF-båndet med fuld videnskabelig forsigtighed:
+                Myndighedernes retningslinjer for måling av LF overser toner, der giver Hum-gene, fordi de baserer sig på brede gennemsnit av lydtrykket for 10–160 Hz med et active A(LF)-filter, som dæmper det faktiske lydtryk i dette område. Hum Hunter adskiller sig ved at behandle den ufiltrerede sandhed som Hum(LF), hvor fokus ligger på de fremtrædende Hum-toner:
             </p>
             
             <div class="bg-black/20 p-4 rounded-xl space-y-3 border border-white/5">
                 <h3 class="text-sm font-bold text-sky-400 font-mono uppercase tracking-wider">Teknologiske principper i Hum Hunter:</h3>
                 <ul class="list-disc list-inside space-y-2 text-xs text-white/80 pl-1">
                     <li><strong class="text-white">Rå databehandling:</strong> Appen trækker ukomprimerede Float32 decimalværdier i dBFS (Decibel Relative to Full Scale) direkte ud af lydchippen via Web Audio API i stedet for at gætte sig frem.</li>
-                    <li><strong class="text-white">Knivskarp frekvensadskillelse:</strong> Analyse-motoren arbejder med en båndopløsning på helt ned til ~1,4 Hz pr. søjle, hvilket forhindrer smalle maskintopper i at drukne.</li>
-                    <li><strong class="text-white">Målrettet Hum-Isolator:</strong> Softwarevinduet er indsnævret til specifikt at overvåge og scanne det kritiske område fra 40 til 55 Hz. Det fjerner uvedkommende håndrystelser og bygningsvibrationer.</li>
+                    <li><strong class="text-white">Knivskarp frekvensadskillelse:</strong> Analyse-motoren arbejder med en båndopløsning på helt ned til ~1,4 Hz pr. søjle, hvilket forhindrer smalle maskintopper i at drukne og giver en markant bedre frekvensopløsning i analysen.</li>
+                    <li><strong class="text-white">Målrettet Hum-Isolator:</strong> Softwarevinduet er indsnævret til specifikt at overvåge og scanne det kritiske område fra 40 til 55 Hz. Dette sikrer effektivt, at baggrundsstøj uden for området fjernes, herunder uvedkommende håndrystelser og dybe bygningsvibrationer.</li>
                     <li><strong class="text-white">Dynamisk Auto-Scaling:</strong> Grafen tilpasser sig automatisk rummets specifikke minimums- og maksimumstryk, hvilket trækker den reelle brummetone tydeligt frem som en skarp nål.</li>
                 </ul>
             </div>
         </section>
 
-        <!-- Section: Myndigheder &amp; Klagesager -->
+        <!-- Sektion: Myndigheder &amp; Klagesager -->
         <section class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-4">
             <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
                 <span class="text-2xl">⚖️</span>
@@ -98,11 +113,11 @@
                 Denne type afgørelser udstiller det grundlæggende problem i den nuværende lovgivning: Myndighederne anvender brede gennemsnitsberegninger over hele frekvensbåndet (10–160 Hz). Hvis en borger er plaget af en intens og konstant brummetone på en specifik frekvens, forsvinder den fuldstændig i de officielle gennemsnitstal. 
             </p>
             <p class="text-white/80 leading-relaxed text-sm">
-                Derfor er det afgørende at understøtte og udbygge uafhængige projekter som <span class="text-sky-300">humhunter.dk</span>, <span class="text-sky-300">plan-b-project.eu</span> samt akademisk forskning på <span class="text-sky-300">Zealand.dk</span>, så der kan lægges et sagligt pres mod en modernisering af de officielle målemetoder.
+                Derfor er det afgørende at understøtte og udbygge uafhængige projekter som <span class="text-sky-300">humhunter.dk</span>, <span class="text-sky-300">plan-b-project.eu</span> samt akademisk forskning på <span class="text-sky-300">Zealand.dk</span>, så der kan lægges et sagligt pres mod en modernisering av de officielle målemetoder.
             </p>
         </section>
 
-        <!-- Section: Credits &amp; Bidragsydere -->
+        <!-- Sektion: Credits &amp; Bidragsydere -->
         <footer class="theme-box rounded-2xl p-6 shadow-xl border border-white/5 space-y-3 text-sm">
             <div class="flex items-center space-x-3 border-b border-white/10 pb-3">
                 <span class="text-2xl">🌱</span>
@@ -119,6 +134,13 @@
                 </div>
             </div>
         </footer>
+
+        <!-- 🔥 NEDERSTE KNAP: Tilbage til måling -->
+        <div class="pt-4">
+            <a href="index.html" class="w-full bg-[#0B2F3D] hover:bg-[#114357] text-white border border-white/10 rounded-xl py-4 text-center font-bold shadow-lg transition-all block active:scale-95 text-base sm:text-lg flex items-center justify-center space-x-2">
+                <span>🎙️</span> <span>Tilbage til måling</span>
+            </a>
+        </div>
 
     </div>
 
