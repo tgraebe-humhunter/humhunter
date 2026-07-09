@@ -189,7 +189,7 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <!-- 🔥 SKJULT UDVIKLER LINK: Ved klik downloades samtlige rå ubehandlede dBFS data -->
+            <!-- 🔥 SKJULT UDVIKLER LINK: Ved klik downloades samtlige rå ubehandlede data -->
             <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.18 Dev 🛠️</div>
         </div>
     </div>
@@ -222,7 +222,6 @@
         let currentTemp = null, currentWindSpeed = null, currentWindDir = null;
         let globalTopPeaksArray = [];
         
-        // Globale delte variabler til brug for rå datadump
         let globalAccumulatedSpectrum = null;
         let globalBufferLength = 0;
         let globalSampleRate = 44100;
@@ -240,6 +239,8 @@
             } catch (err) { console.error("Vejr-fejl:", err); }
         }
 
+        // 🔥 CRITICAL LEAFLET FIX FOR SAFARI/IPAD: Tvinger kortet til at genberegne dets rå containerstørrelse (invalidateSize)
+        // Når man skifter tab på en iPad, muler Safari ofte kortet til en højde på 0px, hvilket gør det usynligt.
         window.switchView = function(viewName) {
             if (viewName === 'measure') {
                 document.getElementById('view-measure').classList.remove('hidden');
@@ -247,7 +248,11 @@
             } else {
                 document.getElementById('view-measure').classList.add('hidden');
                 document.getElementById('view-map').classList.remove('hidden');
-                if (!map) initLiveMap();
+                if (!map) {
+                    initLiveMap();
+                } else {
+                    setTimeout(() => { map.invalidateSize(); }, 200);
+                }
             }
         };
 
@@ -294,7 +299,26 @@
             } catch (err) { alert("Fejl under generering af JSON."); }
         };
 
+        function getZoneColor(dbValue) {
+            if (dbValue < 25) return '#0c4a6e';  
+            if (dbValue <= 30) return '#0ea5e9'; 
+            if (dbValue <= 35) return '#38bdf8'; 
+            if (dbValue < 40) return '#22c55e';    
+            if (dbValue < 45) return '#eab308';    
+            if (dbValue < 50) return '#f97316';    
+            return '#ef4444';                      
+        }
+
+        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
         function updateMapMarkers() {
+            if (!map) return;
             markersGroup.forEach(m => map.removeLayer(m));
             markersGroup = [];
             const filteredData = globalMeasurements.filter(d => currentMapFilter === 'Alle' || d.environment === currentMapFilter);
@@ -326,9 +350,13 @@
         }
 
         function initLiveMap() {
+            // Tvinger containeren i fokus
             map = L.map('map').setView([55.8424, 11.5562], 11);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             
+            // Ekstra invalidateSize sikring lige efter indlæsning
+            setTimeout(() => { map.invalidateSize(); }, 300);
+
             onSnapshot(collection(db, "measurements"), (snapshot) => {
                 globalMeasurements = [];
                 snapshot.forEach((doc) => {
@@ -341,7 +369,6 @@
             });
         }
 
-        // 🔥 DYNAMISK AUTO-SCALING PÅ SPEKTRAL GRAF (Slut med flade kurver)
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -364,7 +391,6 @@
                 if(freq >= 40 && freq <= 55) {
                     const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
                     
-                    // Transformation med præ-emphasis forstærkning til 43Hz
                     let binDb = Math.round(avgDbFS + 138);
                     if (freq >= 42 && freq <= 44) binDb += 5; 
                     
@@ -378,9 +404,8 @@
             if(points.length === 0) return;
             const barWidth = canvas.width / points.length;
             
-            // 🔥 AUTO-SCALING ALGORITME: Sætter bunden og toppen dynamisk ud fra dine tal
             if (maxMeasuredDb === minMeasuredDb) minMeasuredDb = maxMeasuredDb - 10;
-            let paddingBottom = 4; // Sikrer at søjler ikke rammer bunden helt
+            let paddingBottom = 4; 
             let graphMin = Math.max(0, minMeasuredDb - paddingBottom);
             let graphMax = maxMeasuredDb + 2;
             let heightRange = graphMax - graphMin;
@@ -393,7 +418,6 @@
             gradient.addColorStop(1.0, '#ef4444');   
             
             points.forEach((pt, index) => {
-                // Skalerer lineært mellem det reelle minimum og maksimum målt i rummet
                 const finalHeight = ((pt.db - graphMin) / heightRange) * graphHeight;
                 const x = index * barWidth;
                 const y = graphHeight - Math.max(3, finalHeight);
@@ -402,7 +426,6 @@
                 ctx.fillRect(x, y, barWidth - 0.5, Math.max(3, finalHeight));
             });
             
-            // X-Akse linje
             ctx.strokeStyle = 'rgba(255,255,255,0.2)';
             ctx.lineWidth = 1 * dpr;
             ctx.beginPath();
@@ -458,7 +481,6 @@
                 const dataArray = new Float32Array(bufferLength);
                 const sampleRate = audioCtx.sampleRate;
                 
-                // Opdaterer globale variable til brug i rå data dump
                 globalAccumulatedSpectrum = new Float32Array(bufferLength);
                 globalBufferLength = bufferLength;
                 globalSampleRate = sampleRate;
@@ -538,7 +560,6 @@
                     
                     if (audioCtx.state === 'suspended') { audioCtx.resume(); }
                     
-                    // 🔥 STRØMLINIET DIAGNOSTIK: Henter Float32 korrekt uden at crashe uret
                     analyser.getFloatFrequencyData(dataArray);
                     let intervalSum = 0, lfBins = 0;
                     
@@ -559,7 +580,6 @@
             } catch (err) { alert("Ingen mikrofonadgang!"); audioCtx.close(); }
         };
 
-        // 🔥 DET HEMMELIGE DATADUMP MODUL: Downloader ubehandlet, råt spektrum til kalibrering
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
             let fileContent = "=== HUM HUNTER v3.18 Dev - RÅ AUDIO SPEKTRUM DUMP ===\n";
@@ -572,7 +592,7 @@
             
             for(let i = 1; i < globalBufferLength; i++) {
                 const freq = i * globalSampleRate / 16384;
-                if(freq >= 15 && freq <= 90) { // Brede rammer for kalibrering i råfilen
+                if(freq >= 15 && freq <= 90) { 
                     const avgDbFS = globalAccumulatedSpectrum[i] / globalSampleCount;
                     fileContent += freq.toFixed(2) + " Hz | " + avgDbFS.toFixed(2) + " dBFS\n";
                 }
