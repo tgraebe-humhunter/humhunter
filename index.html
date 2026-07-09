@@ -30,10 +30,11 @@
 
     <div class="w-full max-w-md flex flex-col pb-8">
         
-        <!-- Top Navigation -->
-        <div class="grid grid-cols-2 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md">
+        <!-- 🔥 TOP NAV OPGRADERING V3.19: Udvidet grid til 3 kolonner (Måler / Kort / Om) -->
+        <div class="grid grid-cols-3 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md text-xs sm:text-sm">
             <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all">🎙️ Måler</button>
-            <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Live Kort</button>
+            <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Kort</button>
+            <a href="about.html" class="text-white/60 py-2 rounded-lg transition-all hover:text-white flex items-center justify-center space-x-1">📄 Om</a>
         </div>
         
         <!-- ================= VIEW 1: MÅLER DASHBOARD ================= -->
@@ -107,7 +108,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.18 Dev</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.19 Live</div>
             </div>
         </div>
 
@@ -189,8 +190,8 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <!-- 🔥 SKJULT UDVIKLER LINK: Ved klik downloades samtlige rå ubehandlede data -->
-            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.18 Dev 🛠️</div>
+            <!-- SKJULT UDVIKLER LINK -->
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.19 Live 🛠️</div>
         </div>
     </div>
 
@@ -239,15 +240,17 @@
             } catch (err) { console.error("Vejr-fejl:", err); }
         }
 
-        // 🔥 CRITICAL LEAFLET FIX FOR SAFARI/IPAD: Tvinger kortet til at genberegne dets rå containerstørrelse (invalidateSize)
-        // Når man skifter tab på en iPad, muler Safari ofte kortet til en højde på 0px, hvilket gør det usynligt.
         window.switchView = function(viewName) {
             if (viewName === 'measure') {
                 document.getElementById('view-measure').classList.remove('hidden');
                 document.getElementById('view-map').classList.add('hidden');
+                document.getElementById('tab-measure').className = "bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all";
+                document.getElementById('tab-map').className = "text-white/60 py-2 rounded-lg transition-all hover:text-white";
             } else {
                 document.getElementById('view-measure').classList.add('hidden');
                 document.getElementById('view-map').classList.remove('hidden');
+                document.getElementById('tab-map').className = "bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all";
+                document.getElementById('tab-measure').className = "text-white/60 py-2 rounded-lg transition-all hover:text-white";
                 if (!map) {
                     initLiveMap();
                 } else {
@@ -298,76 +301,6 @@
                 document.body.appendChild(dl); dl.click(); dl.remove();
             } catch (err) { alert("Fejl under generering af JSON."); }
         };
-
-        function getZoneColor(dbValue) {
-            if (dbValue < 25) return '#0c4a6e';  
-            if (dbValue <= 30) return '#0ea5e9'; 
-            if (dbValue <= 35) return '#38bdf8'; 
-            if (dbValue < 40) return '#22c55e';    
-            if (dbValue < 45) return '#eab308';    
-            if (dbValue < 50) return '#f97316';    
-            return '#ef4444';                      
-        }
-
-        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        function updateMapMarkers() {
-            if (!map) return;
-            markersGroup.forEach(m => map.removeLayer(m));
-            markersGroup = [];
-            const filteredData = globalMeasurements.filter(d => currentMapFilter === 'Alle' || d.environment === currentMapFilter);
-
-            filteredData.forEach((data) => {
-                const dbVal = data.decibel || 20;
-                const color = getZoneColor(dbVal);
-                
-                const circle = L.circle([data.latitude, data.longitude], { radius: 500, fillColor: color, fillOpacity: 0.12, stroke: false }).addTo(map);
-                const centerDot = L.circleMarker([data.latitude, data.longitude], { radius: 7, fillColor: color, fillOpacity: 1.0, color: '#ffffff', weight: 1.5, opacity: 1.0 }).addTo(map);
-
-                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('da-DK', {hour: '2-digit', minute:'2-digit'}) : 'Ukendt';
-                const weatherInfo = data.weather ? `<div class="border-t border-white/10 pt-1 mt-1 text-[11px] text-white/60">💨 <b>Vind:</b> ${data.weather.wind_speed} km/t (${data.weather.wind_direction}°)<br>🌡️ <b>Temp:</b> ${data.weather.temperature} °C</div>` : '';
-
-                const popupContent = `
-                    <div class="text-xs space-y-1 font-sans">
-                        <div class="font-bold text-sm text-sky-400 border-b border-white/10 pb-1 mb-1">📍 Hum Måling</div>
-                        <div><b>Måler:</b> <span class="text-sky-200 font-bold">${data.user_id || 'Anonym'}</span></div>
-                        <div><b>Hum Lydtryk:</b> <span class="text-yellow-400 font-bold">${dbVal.toFixed(1)} dB Lp(Z)</span></div>
-                        <div><b>Topfrekvens:</b> <span class="text-emerald-400 font-bold">${data.peak_frequency ? data.peak_frequency + ' Hz' : 'Ukendt'}</span></div>
-                        <div><b>Sted:</b> ${data.environment || 'Udendørs'} (${dateStr})</div>
-                        ${weatherInfo}
-                        ${data.comment ? `<div class="bg-white/5 p-1.5 rounded mt-1 italic">"${data.comment}"</div>` : ''}
-                    </div>`;
-                
-                centerDot.bindPopup(popupContent); circle.bindPopup(popupContent);
-                markersGroup.push(circle); markersGroup.push(centerDot);
-            });
-        }
-
-        function initLiveMap() {
-            // Tvinger containeren i fokus
-            map = L.map('map').setView([55.8424, 11.5562], 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            
-            // Ekstra invalidateSize sikring lige efter indlæsning
-            setTimeout(() => { map.invalidateSize(); }, 300);
-
-            onSnapshot(collection(db, "measurements"), (snapshot) => {
-                globalMeasurements = [];
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.latitude && data.longitude) { globalMeasurements.push(data); }
-                });
-                globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
-                updateMapMarkers();
-                if(currentLatitude && currentLongitude) generateGeocacheMissions(currentLatitude, currentLongitude);
-            });
-        }
 
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
@@ -582,19 +515,27 @@
 
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
-            let fileContent = "=== HUM HUNTER v3.18 Dev - RÅ AUDIO SPEKTRUM DUMP ===\n";
-            fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
-            fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
-            fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
-            fileContent += "--------------------------------------------------------\n";
-            fileContent += "Frekvens (Hz) | Rå dBFS Værdi\n";
-            fileContent += "--------------------------------------------------------\n";
+            let fileContent = "=== HUM HUNTER v3.19 Live - RÅ AUDIO SPEKTRUM DUMP ===
+";
+            fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "
+";
+            fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode
+";
+            fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder
+";
+            fileContent += "--------------------------------------------------------
+";
+            fileContent += "Frekvens (Hz) | Rå dBFS Værdi
+";
+            fileContent += "--------------------------------------------------------
+";
             
             for(let i = 1; i < globalBufferLength; i++) {
                 const freq = i * globalSampleRate / 16384;
                 if(freq >= 15 && freq <= 90) { 
                     const avgDbFS = globalAccumulatedSpectrum[i] / globalSampleCount;
-                    fileContent += freq.toFixed(2) + " Hz | " + avgDbFS.toFixed(2) + " dBFS\n";
+                    fileContent += freq.toFixed(2) + " Hz | " + avgDbFS.toFixed(2) + " dBFS
+";
                 }
             }
             
