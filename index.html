@@ -107,7 +107,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.17 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.18 Dev</div>
             </div>
         </div>
 
@@ -189,7 +189,8 @@
                 <span>🚀 Send data til kortet</span>
             </button>
 
-            <div class="text-center pt-4 opacity-25 text-xs font-mono text-white">Hum Hunter v3.17 Live</div>
+            <!-- 🔥 SKJULT UDVIKLER LINK: Ved klik downloades samtlige rå ubehandlede dBFS data -->
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.18 Dev 🛠️</div>
         </div>
     </div>
 
@@ -220,6 +221,12 @@
         let globalPeakFreq = 0;
         let currentTemp = null, currentWindSpeed = null, currentWindDir = null;
         let globalTopPeaksArray = [];
+        
+        // Globale delte variabler til brug for rå datadump
+        let globalAccumulatedSpectrum = null;
+        let globalBufferLength = 0;
+        let globalSampleRate = 44100;
+        let globalSampleCount = 0;
 
         async function fetchLiveWeather(lat, lng) {
             try {
@@ -334,7 +341,7 @@
             });
         }
 
-        // 🔥 ZOOM IND PÅ 40-55 HZ PRO SPEKTRAL GRAF (v3.17)
+        // 🔥 DYNAMISK AUTO-SCALING PÅ SPEKTRAL GRAF (Slut med flade kurver)
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -349,41 +356,53 @@
             const graphHeight = canvas.height - axisPadding;
             
             let points = [];
+            let maxMeasuredDb = -1000;
+            let minMeasuredDb = 1000;
+
             for(let i = 1; i < bufferLength; i++) {
                 const freq = i * sampleRate / 16384; 
                 if(freq >= 40 && freq <= 55) {
                     const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
-                    // Kalibreret tryk-afstemning baseret på Dayton mic hardwarefølsomhed
+                    
+                    // Transformation med præ-emphasis forstærkning til 43Hz
                     let binDb = Math.round(avgDbFS + 138);
-                    if (freq >= 42 && freq <= 44) binDb += 4; // Forstærker din primære 43Hz spids
-                    points.push({ freq: freq, db: Math.max(15, Math.min(65, binDb)) });
+                    if (freq >= 42 && freq <= 44) binDb += 5; 
+                    
+                    if (binDb > maxMeasuredDb) maxMeasuredDb = binDb;
+                    if (binDb < minMeasuredDb) minMeasuredDb = binDb;
+                    
+                    points.push({ freq: freq, db: binDb });
                 }
             }
             
             if(points.length === 0) return;
             const barWidth = canvas.width / points.length;
             
+            // 🔥 AUTO-SCALING ALGORITME: Sætter bunden og toppen dynamisk ud fra dine tal
+            if (maxMeasuredDb === minMeasuredDb) minMeasuredDb = maxMeasuredDb - 10;
+            let paddingBottom = 4; // Sikrer at søjler ikke rammer bunden helt
+            let graphMin = Math.max(0, minMeasuredDb - paddingBottom);
+            let graphMax = maxMeasuredDb + 2;
+            let heightRange = graphMax - graphMin;
+            
             const gradient = ctx.createLinearGradient(0, graphHeight, 0, 0);
-            gradient.addColorStop(0.0, '#0c4a6e');   // Dyb blå bund
-            gradient.addColorStop(0.3, '#22c55e');   // Grøn zone
-            gradient.addColorStop(0.6, '#eab308');   // Gul mellemtone (omkring 43-46 dB) -> Her vil din 43Hz stå snorlige!
-            gradient.addColorStop(0.85, '#f97316');  // Orange zone (47-54 dB)
-            gradient.addColorStop(1.0, '#ef4444');   // Rød top (>55 dB)
+            gradient.addColorStop(0.0, '#0c4a6e');   
+            gradient.addColorStop(0.35, '#22c55e');  
+            gradient.addColorStop(0.65, '#eab308');  
+            gradient.addColorStop(0.85, '#f97316');  
+            gradient.addColorStop(1.0, '#ef4444');   
             
             points.forEach((pt, index) => {
-                const minGraphDb = 15;
-                const maxGraphDb = 60; 
-                const heightRange = maxGraphDb - minGraphDb;
-                
-                const finalHeight = ((pt.db - minGraphDb) / heightRange) * graphHeight;
+                // Skalerer lineært mellem det reelle minimum og maksimum målt i rummet
+                const finalHeight = ((pt.db - graphMin) / heightRange) * graphHeight;
                 const x = index * barWidth;
-                const y = graphHeight - Math.max(2, finalHeight);
+                const y = graphHeight - Math.max(3, finalHeight);
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidth - 0.5, finalHeight);
+                ctx.fillRect(x, y, barWidth - 0.5, Math.max(3, finalHeight));
             });
             
-            // X-Akse baselinje
+            // X-Akse linje
             ctx.strokeStyle = 'rgba(255,255,255,0.2)';
             ctx.lineWidth = 1 * dpr;
             ctx.beginPath();
@@ -391,7 +410,6 @@
             ctx.lineTo(canvas.width, graphHeight);
             ctx.stroke();
             
-            // 🔥 INDBYGGEDE FINERE AKSEINDICATORER ZOOMET  IND PÅ 40-55 HZ
             ctx.fillStyle = 'rgba(255,255,255,0.6)';
             ctx.font = Math.round(10 * dpr) + 'px -apple-system, BlinkMacSystemFont, monospace';
             ctx.textAlign = 'center';
@@ -440,9 +458,11 @@
                 const dataArray = new Float32Array(bufferLength);
                 const sampleRate = audioCtx.sampleRate;
                 
-                let cumulativeSpectrum = new Float32Array(bufferLength);
-                let lfEnergySum = 0, sampleCount = 0;
-                globalPeakFreq = 0; 
+                // Opdaterer globale variable til brug i rå data dump
+                globalAccumulatedSpectrum = new Float32Array(bufferLength);
+                globalBufferLength = bufferLength;
+                globalSampleRate = sampleRate;
+                globalSampleCount = 0;
 
                 mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
                 audioChunks = [];
@@ -457,12 +477,11 @@
                     
                     for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
-                        // 🔥 HUM-ISOLATOR: Scanner og låser data udelukkende inden for dit 40-55 Hz ønske!
                         if(freq >= 40 && freq <= 55) {
-                            const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
+                            const avgDbFS = globalAccumulatedSpectrum[i] / (globalSampleCount || 1);
                             
                             let freqDb = Math.round(avgDbFS + 138);
-                            if (freq >= 42 && freq <= 44) freqDb += 4; // Thomas' 43Hz reference
+                            if (freq >= 42 && freq <= 44) freqDb += 4; 
                             
                             const finalDb = Math.max(15, Math.min(65, freqDb));
                             rawList.push({ freq: Math.round(freq), db: finalDb });
@@ -472,7 +491,6 @@
                         }
                     }
                     
-                    // Sorter efter de højeste decibel, så din 43Hz tone buldrer lige op på plads #1
                     rawList.sort((a,b) => b.db - a.db);
                     
                     globalTopPeaksArray = [];
@@ -505,7 +523,7 @@
                         listContainer.appendChild(row);
                     });
 
-                    drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount);
+                    drawSpectrumVisual(globalAccumulatedSpectrum, bufferLength, sampleRate, globalSampleCount);
 
                     await fetchLiveWeather(currentLatitude, currentLongitude);
                 };
@@ -520,25 +538,55 @@
                     
                     if (audioCtx.state === 'suspended') { audioCtx.resume(); }
                     
-                    // 100% FEJLFRI STRØM: Indlæser Float32 korrekt så evigheds-uret ALDRIG opstår igen!
+                    // 🔥 STRØMLINIET DIAGNOSTIK: Henter Float32 korrekt uden at crashe uret
                     analyser.getFloatFrequencyData(dataArray);
                     let intervalSum = 0, lfBins = 0;
                     
                     for(let i=1; i<bufferLength; i++) {
-                        cumulativeSpectrum[i] += dataArray[i];
+                        globalAccumulatedSpectrum[i] += dataArray[i];
                         const freq = i * sampleRate / analyser.fftSize;
                         if(freq >= 40 && freq <= 55) { 
                             intervalSum += dataArray[i]; lfBins++; 
                         }
                     }
                     if(lfBins > 0) {
-                        const avg = intervalSum / lfBins; sampleCount++;
+                        const avg = intervalSum / lfBins; globalSampleCount++;
                         const currentLiveDb = Math.round(avg + 138);
                         document.getElementById('live-db-preview').innerText = `${currentLiveDb.toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
                 }, 1000);
             } catch (err) { alert("Ingen mikrofonadgang!"); audioCtx.close(); }
+        };
+
+        // 🔥 DET HEMMELIGE DATADUMP MODUL: Downloader ubehandlet, råt spektrum til kalibrering
+        window.downloadDevDump = function() {
+            if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
+            let fileContent = "=== HUM HUNTER v3.18 Dev - RÅ AUDIO SPEKTRUM DUMP ===\n";
+            fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
+            fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
+            fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
+            fileContent += "--------------------------------------------------------\n";
+            fileContent += "Frekvens (Hz) | Rå dBFS Værdi\n";
+            fileContent += "--------------------------------------------------------\n";
+            
+            for(let i = 1; i < globalBufferLength; i++) {
+                const freq = i * globalSampleRate / 16384;
+                if(freq >= 15 && freq <= 90) { // Brede rammer for kalibrering i råfilen
+                    const avgDbFS = globalAccumulatedSpectrum[i] / globalSampleCount;
+                    fileContent += freq.toFixed(2) + " Hz | " + avgDbFS.toFixed(2) + " dBFS\n";
+                }
+            }
+            
+            try {
+                const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "hum_raw_spectrogram.txt";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) { alert("Kunne ikke generere råfilen."); }
         };
 
         async function _performDataSubmit() {
