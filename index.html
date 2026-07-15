@@ -108,7 +108,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.21 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.22 Live</div>
             </div>
         </div>
 
@@ -120,21 +120,54 @@
                     <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold text-[10px]">40-55 Hz Isoleret</span>
                 </div>
                 <div class="flex flex-wrap gap-1 pt-1 font-mono text-[10px] font-bold text-white">
-                    <span class="bg-[#0c4a6e] px-1 py-0.5 rounded">< 25 dB</span>
+                    <span class="bg-[#0c4a6e] px-1 py-0.5 rounded">&lt; 25 dB</span>
                     <span class="bg-[#0ea5e9] px-1 py-0.5 rounded">25-30 dB</span>
                     <span class="bg-[#38bdf8] text-slate-900 px-1 py-0.5 rounded">30-35 dB</span>
                     <span class="bg-green-500 px-1 py-0.5 rounded">35-40 dB</span>
                     <span class="bg-yellow-400 text-black px-1 py-0.5 rounded">40-45 dB ⚠️</span>
                     <span class="bg-orange-500 px-1 py-0.5 rounded">45-50 dB</span>
-                    <span class="bg-red-500 px-1 py-0.5 rounded">> 50 dB 🚨</span>
+                    <span class="bg-red-500 px-1 py-0.5 rounded">&gt; 50 dB 🚨</span>
                 </div>
             </div>
 
+            <!-- Standard Miljø Filter -->
             <div class="mb-4">
                 <div class="theme-box rounded-xl p-1.5 grid grid-cols-3 gap-2 shadow-md border border-white/5 text-center text-sm font-semibold">
                     <button id="filter-all" onclick="setMapFilter('Alle')" class="measure-active rounded-lg py-1.5 transition-all">🌍 Alle</button>
                     <button id="filter-outdoor" onclick="setMapFilter('Udendørs')" class="measure-inactive rounded-lg py-1.5 transition-all">🌳 Ude</button>
                     <button id="filter-indoor" onclick="setMapFilter('Indendørs')" class="measure-inactive rounded-lg py-1.5 transition-all">🏠 Inde</button>
+                </div>
+            </div>
+
+            <!-- NYT: Avancerede live-filtre til kortet -->
+            <div class="mb-4 theme-box rounded-xl p-3 border border-white/5 shadow-md">
+                <h3 class="text-xs uppercase tracking-wider font-semibold text-white/50 mb-2">🔍 Avancerede Filtre</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-white/60 mb-1">Måleudstyr</label>
+                        <select id="filter-equipment" onchange="updateMapMarkers()" class="w-full bg-[#176B87]/30 text-white rounded-lg p-1.5 text-[11px] focus:outline-none border border-white/5 font-medium">
+                            <option value="all" class="bg-[#0B2F3D]">Alle enheder</option>
+                            <option value="iPhone_Ny" class="bg-[#0B2F3D]">📱 iPhone (Ny)</option>
+                            <option value="Smartphone_Gammel" class="bg-[#0B2F3D]">📱 Gammel</option>
+                            <option value="Dayton_iMM6" class="bg-[#0B2F3D]">🎙️ Dayton iMM-6</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-white/60 mb-1">Frekvens</label>
+                        <select id="filter-frequency" onchange="updateMapMarkers()" class="w-full bg-[#176B87]/30 text-white rounded-lg p-1.5 text-[11px] focus:outline-none border border-white/5 font-medium">
+                            <option value="all" class="bg-[#0B2F3D]">Alle (40-55Hz)</option>
+                            <option value="43" class="bg-[#0B2F3D]">Kun 43 Hz</option>
+                            <option value="44" class="bg-[#0B2F3D]">Kun 44 Hz</option>
+                            <option value="45" class="bg-[#0B2F3D]">Kun 45 Hz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-white/60 mb-1">Vindstyrke</label>
+                        <select id="filter-wind" onchange="updateMapMarkers()" class="w-full bg-[#176B87]/30 text-white rounded-lg p-1.5 text-[11px] focus:outline-none border border-white/5 font-medium">
+                            <option value="all" class="bg-[#0B2F3D]">Al vind</option>
+                            <option value="low" class="bg-[#0B2F3D]">&lt; 3 m/s</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -191,7 +224,7 @@
             </button>
 
             <!-- SKJULT UDVIKLER LINK -->
-            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.21 🛠️</div>
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.22 Live 🛠️</div>
         </div>
     </div>
 
@@ -291,15 +324,26 @@
             if (map) updateMapMarkers();
         };
 
+        // FEJLSIKRET DOWNLOAD: Bruger pålidelig Blob API i stedet for den usikre og begrænsede data-URI
         window.exportRawData = function() {
-            if (globalMeasurements.length === 0) return;
+            if (globalMeasurements.length === 0) {
+                alert("Målingerne indlæses stadig fra skyen. Prøv igen om et øjeblik.");
+                return;
+            }
             try {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalMeasurements, null, 2));
+                const jsonString = JSON.stringify(globalMeasurements, null, 2);
+                const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
                 const dl = document.createElement('a');
-                dl.setAttribute("href", dataStr);
-                dl.setAttribute("download", "humhunter_dataset.json");
-                document.body.appendChild(dl); dl.click(); dl.remove();
-            } catch (err) { alert("Fejl under generering af JSON."); }
+                dl.href = url;
+                dl.download = `humhunter_database_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(dl); 
+                dl.click(); 
+                document.body.removeChild(dl);
+                URL.revokeObjectURL(url);
+            } catch (err) { 
+                alert("Fejl under generering af JSON: " + err.message); 
+            }
         };
 
         function getZoneColor(dbValue) {
@@ -320,11 +364,47 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // OPDATERET MAP-MARKER MOTOR MED FILTRERING
         function updateMapMarkers() {
             if (!map) return;
             markersGroup.forEach(m => map.removeLayer(m));
             markersGroup = [];
-            const filteredData = globalMeasurements.filter(d => currentMapFilter === 'Alle' || d.environment === currentMapFilter);
+
+            // Hent aktive værdier fra de nye avancerede dropdown-filtre
+            const selectedEquipment = document.getElementById('filter-equipment')?.value || 'all';
+            const selectedFrequency = document.getElementById('filter-frequency')?.value || 'all';
+            const selectedWind = document.getElementById('filter-wind')?.value || 'all';
+
+            // Kør alle data igennem det skræddersyede filter-rør
+            const filteredData = globalMeasurements.filter((data) => {
+                // 1. Miljø Filter (Alle / Ude / Inde)
+                if (currentMapFilter !== 'Alle' && data.environment !== currentMapFilter) {
+                    return false;
+                }
+
+                // 2. Måleudstyr Filter
+                if (selectedEquipment !== 'all' && data.equipment !== selectedEquipment) {
+                    return false;
+                }
+
+                // 3. Præcis Frekvens Filter (43, 44 eller 45 Hz)
+                if (selectedFrequency !== 'all') {
+                    const peak = data.peak_frequency ? Math.round(data.peak_frequency) : 0;
+                    if (peak !== parseInt(selectedFrequency)) {
+                        return false;
+                    }
+                }
+
+                // 4. Vind Filter (< 3 m/s svarende til < 10.8 km/t)
+                if (selectedWind === 'low') {
+                    const windSpeed = (data.weather && data.weather.wind_speed !== undefined) ? data.weather.wind_speed : 999;
+                    if (windSpeed >= 10.8) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
 
             filteredData.forEach((data) => {
                 const dbVal = data.decibel || 20;
@@ -351,6 +431,9 @@
                 markersGroup.push(circle); markersGroup.push(centerDot);
             });
         }
+
+        // Eksporter filter-motoren til den globale vindueskontekst så HTML inline can nå den
+        window.updateMapMarkers = updateMapMarkers;
 
         function initLiveMap() {
             map = L.map('map').setView([55.8424, 11.5562], 11);
@@ -483,7 +566,7 @@
                 
                 const bufferLength = analyser.frequencyBinCount;
                 const dataArray = new Float32Array(bufferLength);
-                const sampleRate = audioCtx.sampleRate;
+                const sampleRate = audioContext ? audioContext.sampleRate : audioCtx.sampleRate;
                 
                 globalAccumulatedSpectrum = new Float32Array(bufferLength);
                 globalBufferLength = bufferLength;
@@ -584,11 +667,9 @@
             } catch (err) { alert("Ingen mikrofonadgang!"); audioCtx.close(); }
         };
 
-        // 🔥 KORREKT ESCAPET STRING-LITERAL RETTELSE TIL v3.21: 
-        // Vi bruger string-escaping \n for at forhindre at JavaScript kompileren fejler på rå tekstlinjebrud!
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
-            let fileContent = "=== HUM HUNTER v3.21 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
+            let fileContent = "=== HUM HUNTER v3.22 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
             fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
             fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
             fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
