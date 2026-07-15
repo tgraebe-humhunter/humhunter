@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hum Hunter - Støjdetektiv v3.22 Build 4</title>
+    <title>Hum Hunter - Støjdetektiv</title>
     <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
     <meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -101,14 +101,14 @@
                     <h3 class="font-bold text-[15px] tracking-wide uppercase">Næste mission: Hum-Caching!</h3>
                 </div>
                 <p class="text-xs text-white/70 leading-relaxed">
-                    Mål 500 meter væk for at dække blinde vinkler i kortet. Klik på en fri zone for at åbne ruten i Google Maps:
+                    Mål 500 meter væk for at dække blinde vinkler i kortet. Klik på a fri zone for at åbne ruten i Google Maps:
                 </p>
                 <div id="geocache-grid" class="grid grid-cols-2 gap-2 pt-1"></div>
             </div>
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.22 Build 4</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.22 Build 5</div>
             </div>
         </div>
 
@@ -139,8 +139,8 @@
             </div>
 
             <!-- NYT: Avancerede live-filtre til kortet -->
-            <div class="mb-4 theme-box rounded-xl p-3 border border-white/5 shadow-md">
-                <h3 class="text-xs uppercase tracking-wider font-semibold text-white/50 mb-2">🔍 Avancerede Filtre</h3>
+            <div class="mb-4 theme-box rounded-xl p-3 border border-white/5 shadow-md text-xs">
+                <h3 class="text-[11px] uppercase tracking-wider font-semibold text-white/50 mb-2">🔍 Avancerede Filtre</h3>
                 <div class="grid grid-cols-3 gap-2">
                     <div>
                         <label class="block text-[10px] text-white/60 mb-1">Måleudstyr</label>
@@ -223,7 +223,7 @@
             </button>
 
             <!-- SKJULT UDVIKLER LINK -->
-            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.22 Build 4 🛠️</div>
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.22 Build 5 🛠️</div>
         </div>
     </div>
 
@@ -323,6 +323,7 @@
             if (map) updateMapMarkers();
         };
 
+        // REPARERET JSON DOWNLOAD: Skiftet ud med Blob API som ikke fejler på mobile browsere eller lange strenge
         window.exportRawData = function() {
             if (globalMeasurements.length === 0) {
                 alert("Målingerne indlæses stadig fra skyen. Prøv igen om et øjeblik.");
@@ -335,9 +336,7 @@
                 const dl = document.createElement('a');
                 dl.href = url;
                 dl.download = `humhunter_dataset_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(dl); 
-                dl.click(); 
-                document.body.removeChild(dl);
+                document.body.appendChild(dl); dl.click(); dl.remove();
                 URL.revokeObjectURL(url);
             } catch (err) { alert("Fejl under generering af JSON."); }
         };
@@ -360,6 +359,7 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // TILFØJET AVANCERET LIVE FILTRERING: Udstyr, Frekvens og Vindhastighed under 3 m/s (10.8 km/t)
         function updateMapMarkers() {
             if (!map) return;
             markersGroup.forEach(m => map.removeLayer(m));
@@ -378,7 +378,7 @@
                 }
                 if (selectedWind === 'low') {
                     const ws = (d.weather && d.weather.wind_speed !== undefined) ? d.weather.wind_speed : 999;
-                    if (ws >= 10.8) return false;
+                    if (ws >= 10.8) return false; // Open-Meteo bruger km/t. 3 m/s = 10.8 km/t
                 }
                 return true;
             });
@@ -454,7 +454,7 @@
                     if (freq >= 42 && freq <= 44) binDb += 5; 
                     
                     if (binDb > maxMeasuredDb) maxMeasuredDb = binDb;
-                    if (binDb < minMeasuredDb) minMeasuredDb = minMeasuredDb;
+                    if (binDb < minMeasuredDb) minMeasuredDb = binDb;
                     
                     points.push({ freq: freq, db: binDb });
                 }
@@ -541,9 +541,6 @@
                 
                 const bufferLength = analyser.frequencyBinCount;
                 const dataArray = new Float32Array(bufferLength);
-                
-                // FEJL RETTET I BUILD 4: audioContext var udefineret og kastede ReferenceError, 
-                // hvilket triggede catch-blokken (Ingen mikrofonadgang!). Nu bruges audioCtx direkte.
                 const sampleRate = audioCtx.sampleRate;
                 
                 globalAccumulatedSpectrum = new Float32Array(bufferLength);
@@ -647,7 +644,7 @@
 
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
-            let fileContent = "=== HUM HUNTER v3.22 Build 4 - RÅ AUDIO SPEKTRUM DUMP ===\n";
+            let fileContent = "=== HUM HUNTER v3.21 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
             fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
             fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
             fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
