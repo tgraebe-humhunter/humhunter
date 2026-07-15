@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hum Hunter - Støjdetektiv</title>
+    <title>Hum Hunter - Støjdetektiv v3.22</title>
     <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
     <meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -108,7 +108,7 @@
 
             <div class="mt-auto text-center pb-2 opacity-40">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.22-2 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white">Version 3.22 Build 3</div>
             </div>
         </div>
 
@@ -130,7 +130,6 @@
                 </div>
             </div>
 
-            <!-- Standard Miljø Filter -->
             <div class="mb-4">
                 <div class="theme-box rounded-xl p-1.5 grid grid-cols-3 gap-2 shadow-md border border-white/5 text-center text-sm font-semibold">
                     <button id="filter-all" onclick="setMapFilter('Alle')" class="measure-active rounded-lg py-1.5 transition-all">🌍 Alle</button>
@@ -149,16 +148,16 @@
                             <option value="all" class="bg-[#0B2F3D]">Alle enheder</option>
                             <option value="iPhone_Ny" class="bg-[#0B2F3D]">📱 iPhone (Ny)</option>
                             <option value="Smartphone_Gammel" class="bg-[#0B2F3D]">📱 Gammel</option>
-                            <option value="Dayton_iMM6" class="bg-[#0B2F3D]">🎙️ Dayton iMM-6</option>
+                            <option value="Dayton_iMM6" class="bg-[#0B2F3D]">🎙️ Dayton</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[10px] text-white/60 mb-1">Frekvens</label>
                         <select id="filter-frequency" onchange="updateMapMarkers()" class="w-full bg-[#176B87]/30 text-white rounded-lg p-1.5 text-[11px] focus:outline-none border border-white/5 font-medium">
-                            <option value="all" class="bg-[#0B2F3D]">Alle (40-55Hz)</option>
-                            <option value="43" class="bg-[#0B2F3D]">Kun 43 Hz</option>
-                            <option value="44" class="bg-[#0B2F3D]">Kun 44 Hz</option>
-                            <option value="45" class="bg-[#0B2F3D]">Kun 45 Hz</option>
+                            <option value="all" class="bg-[#0B2F3D]">Alle</option>
+                            <option value="43" class="bg-[#0B2F3D]">43 Hz</option>
+                            <option value="44" class="bg-[#0B2F3D]">44 Hz</option>
+                            <option value="45" class="bg-[#0B2F3D]">45 Hz</option>
                         </select>
                     </div>
                     <div>
@@ -224,7 +223,7 @@
             </button>
 
             <!-- SKJULT UDVIKLER LINK -->
-            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.22-2 Live 🛠️</div>
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.22 Build 3 🛠️</div>
         </div>
     </div>
 
@@ -324,26 +323,23 @@
             if (map) updateMapMarkers();
         };
 
-        // FEJLSIKRET DOWNLOAD: Bruger pålidelig Blob API i stedet for den usikre og begrænsede data-URI
         window.exportRawData = function() {
             if (globalMeasurements.length === 0) {
                 alert("Målingerne indlæses stadig fra skyen. Prøv igen om et øjeblik.");
                 return;
             }
             try {
-                const jsonString = JSON.stringify(globalMeasurements, null, 2);
-                const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+                const dataStr = JSON.stringify(globalMeasurements, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json;charset=utf-8" });
                 const url = URL.createObjectURL(blob);
                 const dl = document.createElement('a');
                 dl.href = url;
-                dl.download = `humhunter_database_${new Date().toISOString().slice(0, 10)}.json`;
+                dl.download = `humhunter_dataset_${new Date().toISOString().slice(0, 10)}.json`;
                 document.body.appendChild(dl); 
                 dl.click(); 
                 document.body.removeChild(dl);
                 URL.revokeObjectURL(url);
-            } catch (err) { 
-                alert("Fejl under generering af JSON: " + err.message); 
-            }
+            } catch (err) { alert("Fejl under generering af JSON."); }
         };
 
         function getZoneColor(dbValue) {
@@ -364,45 +360,26 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        // OPDATERET MAP-MARKER MOTOR MED FILTRERING
         function updateMapMarkers() {
             if (!map) return;
             markersGroup.forEach(m => map.removeLayer(m));
             markersGroup = [];
+            
+            const selectedEq = document.getElementById('filter-equipment') ? document.getElementById('filter-equipment').value : 'all';
+            const selectedFreq = document.getElementById('filter-frequency') ? document.getElementById('filter-frequency').value : 'all';
+            const selectedWind = document.getElementById('filter-wind') ? document.getElementById('filter-wind').value : 'all';
 
-            // Hent aktive værdier fra de nye avancerede dropdown-filtre
-            const selectedEquipment = document.getElementById('filter-equipment')?.value || 'all';
-            const selectedFrequency = document.getElementById('filter-frequency')?.value || 'all';
-            const selectedWind = document.getElementById('filter-wind')?.value || 'all';
-
-            // Kør alle data igennem det skræddersyede filter-rør
-            const filteredData = globalMeasurements.filter((data) => {
-                // 1. Miljø Filter (Alle / Ude / Inde)
-                if (currentMapFilter !== 'Alle' && data.environment !== currentMapFilter) {
-                    return false;
+            const filteredData = globalMeasurements.filter(d => {
+                if (currentMapFilter !== 'Alle' && d.environment !== currentMapFilter) return false;
+                if (selectedEq !== 'all' && d.equipment !== selectedEq) return false;
+                if (selectedFreq !== 'all') {
+                    const peak = d.peak_frequency ? Math.round(d.peak_frequency) : 0;
+                    if (peak !== parseInt(selectedFreq)) return false;
                 }
-
-                // 2. Måleudstyr Filter
-                if (selectedEquipment !== 'all' && data.equipment !== selectedEquipment) {
-                    return false;
-                }
-
-                // 3. Præcis Frekvens Filter (43, 44 eller 45 Hz)
-                if (selectedFrequency !== 'all') {
-                    const peak = data.peak_frequency ? Math.round(data.peak_frequency) : 0;
-                    if (peak !== parseInt(selectedFrequency)) {
-                        return false;
-                    }
-                }
-
-                // 4. Vind Filter (< 3 m/s svarende til < 10.8 km/t)
                 if (selectedWind === 'low') {
-                    const windSpeed = (data.weather && data.weather.wind_speed !== undefined) ? data.weather.wind_speed : 999;
-                    if (windSpeed >= 10.8) {
-                        return false;
-                    }
+                    const ws = (d.weather && d.weather.wind_speed !== undefined) ? d.weather.wind_speed : 999;
+                    if (ws >= 10.8) return false;
                 }
-
                 return true;
             });
 
@@ -431,8 +408,6 @@
                 markersGroup.push(circle); markersGroup.push(centerDot);
             });
         }
-
-        // Eksporter filter-motoren til den globale vindueskontekst så HTML inline can nå den
         window.updateMapMarkers = updateMapMarkers;
 
         function initLiveMap() {
@@ -669,7 +644,7 @@
 
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
-            let fileContent = "=== HUM HUNTER v3.22-2 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
+            let fileContent = "=== HUM HUNTER v3.22 Build 3 - RÅ AUDIO SPEKTRUM DUMP ===\n";
             fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
             fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
             fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
