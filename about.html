@@ -40,10 +40,10 @@
             </div>
             <div class="space-y-4 text-white/80 leading-relaxed text-sm">
                 <p>
-                    <strong class="text-white">Formål:</strong> Formålet med Hum Hunter is at oplyse om udbredelsen af lavfrekvent støj (LF). Dette skal ske via kortlægning af støjen i et afgrænset frekvensområde, som er målrettet Hum-støj. Det er Hum Hunters opfattelse, at LF og Hum(LF) støj skal stoppes ved kilden. Derfor er Hum Hunter-kortet vigtigt for at visualisere potentielle kilder til Hum(LF). I dag har ingen kontrolførende myndighed det rette værktøj eller ressourcer til at lave et sådant Hum-kort.
+                    <strong class="text-white">Formål:</strong> Formålet med Hum Hunter er at oplyse om udbredelsen af lavfrekvent støj (LF). Dette skal ske via kortlægning af støjen i et afgrænset frekvensområde, som er målrettet Hum-støj. Det er Hum Hunters opfattelse, at LF og Hum(LF) støj skal stoppes ved kilden. Derfor er Hum Hunter-kortet vigtigt for at visualisere potentielle kilder til Hum(LF). I dag har ingen kontrolførende myndighed det rette værktøj eller ressourcer til at lave et sådant Hum-kort.
                 </p>
                 <p>
-                    <strong class="text-white">Vision:</strong> Hum Hunters vision er at kunne visualisere og italesætte over for ansvarlige myndigheder, at det er zeit til en gennemgribende fornyelse på området. Lavfrekvent støj opfattes kun bevidst hos ca. 5% af befolkningen, men det påvirker alle med let ubehag, søvnbesvær, koncentrationsforstyrrelse, indlæringsbesvær og fejldiagnosticering med ADHD (fordi der bare ikke kan blive ro i hovedet). Indsamlede målinger og kort vil indgå i det EU-støttede <span class="text-sky-300">plan-b-project.eu</span>, som undersøger de pt. ukendte konsekvenser i naturen.
+                    <strong class="text-white">Vision:</strong> Hum Hunters vision er at kunne visualisere og italesætte over for ansvarlige myndigheder, at det er tid til een gennemgribende fornyelse på området. Lavfrekvent støj opfattes kun bevidst hos ca. 5% af befolkningen, men det påvirker alle med let ubehag, søvnbesvær, koncentrationsforstyrrelse, indlæringsbesvær og fejldiagnosticering med ADHD (fordi der bare ikke kan blive ro i hovedet). Indsamlede målinger og kort vil indgå i det EU-støttede <span class="text-sky-300">plan-b-project.eu</span>, som undersøger de pt. ukendte konsekvenser i naturen.
                 </p>
             </div>
         </section>
@@ -85,13 +85,79 @@
                 Myndighedernes retningslinjer for måling af LF overser toner, der giver Hum-gene, fordi de baserer sig på brede gennemsnit af lydtrykket for 10–160 Hz med et aktivt A(LF)-filter, som dæmper det faktiske lydtryk i dette område. Hum Hunter adskiller sig ved at behandle den ufiltrerede sandhed som Hum(LF), hvor fokus ligger på de fremtrædende Hum-toner.
             </p>
             
-            <!-- NYT: Diagram og link til YouTube-støjeksempel -->
-            <div class="my-6 space-y-4 bg-black/10 p-4 rounded-xl border border-white/5">
-                <h3 class="text-sm font-bold text-sky-400 font-mono uppercase tracking-wider text-center">Visuel dokumentation af gennemsnitsudvanding:</h3>
-                <img src="image_3851eb.png" alt="Forklaring af gennemsnitsudvanding LF" class="w-full rounded-xl border border-white/10 shadow-lg" />
-                <div class="text-center pt-1">
-                    <a href="https://www.youtube.com/watch?v=Z327nyKE6T0" target="_blank" class="inline-flex items-center space-x-2 text-sky-300 hover:text-sky-200 font-semibold text-sm transition-all bg-[#176B87]/50 hover:bg-[#176B87]/70 px-5 py-3 rounded-xl border border-white/10 shadow-md active:scale-95">
-                        <span>📺</span> <span>Se video-forklaring &amp; hør støjeksemplet på YouTube</span>
+            <!-- 🔥 NYT NATIVT HTML/CSS DIAGRAM (Erstatter det ødelagte billede) -->
+            <div class="my-6 space-y-6 bg-black/30 p-4 sm:p-6 rounded-xl border border-white/5">
+                <div>
+                    <h3 class="text-base font-bold text-white text-center sm:text-left">Forklaring af gennemsnitsudvanding LF</h3>
+                    <p class="text-[10px] text-white/50 text-center sm:text-left mt-1">Der er 13 standardiserede centerfrekvenser i 1/3-oktavbåndet fra 10 Hz til 160 Hz i henhold til internationale standarder som ISO 266.</p>
+                </div>
+
+                <!-- Selve Graf-Containeren -->
+                <div class="relative flex h-64 w-full border-b-2 border-slate-500/50 pt-4">
+                    
+                    <!-- Y-akse labels -->
+                    <div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] font-mono text-white/40 pl-1 z-10">
+                        <span>60 dB</span>
+                        <span>40 dB</span>
+                        <span>20 dB</span>
+                        <span class="mb-1">0 dB</span>
+                    </div>
+
+                    <!-- Det visuelle grafområde -->
+                    <div class="relative w-full h-full ml-12 mr-2">
+                        <!-- Bagskærms hjælpelinjer (Grid) -->
+                        <div class="absolute inset-0 flex flex-col justify-between border-l border-slate-500/30">
+                            <div class="w-full border-t border-slate-500/10 h-0"></div>
+                            <div class="w-full border-t border-slate-500/10 h-0"></div>
+                            <div class="w-full border-t border-slate-500/10 h-0"></div>
+                            <div class="w-full h-0"></div>
+                        </div>
+
+                        <!-- 1. GRØN BJÆLKE: Samlet dæmpet støj A(LF) (15.4 dB -> ca 25% højde) -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-green-600/80 h-[25%] rounded-t-sm border border-green-400/30 z-10 animate-fade-in"></div>
+
+                        <!-- 2. GUL SØJLE: 1/3 Oktavbånd ved 40 Hz (Søjle 7 ud af 13) -->
+                        <div style="left: calc((100% / 13) * 6); width: calc(100% / 13);" class="absolute bottom-0 bg-yellow-500 h-[40%] rounded-t-sm border border-yellow-300/40 z-20"></div>
+
+                        <!-- 3. RØD STREG: Den reelle maskintone på 43 Hz (50 dB -> ca 83% højde) -->
+                        <div style="left: calc(((100% / 13) * 6) + (100% / 13) * 0.3);" class="absolute bottom-0 w-[3px] bg-red-500 h-[83%] z-30 shadow-[0_0_8px_rgba(239,68,68,0.7)]"></div>
+                    </div>
+                </div>
+
+                <!-- X-akse frekvensbånd -->
+                <div style="display: grid; grid-template-columns: repeat(13, minmax(0, 1fr));" class="text-[9px] font-mono font-bold text-center bg-[#0c4a6e]/50 p-1 rounded-md ml-12 mr-2">
+                    <span>10</span><span>12.5</span><span>16</span><span>20</span><span>25</span><span>31.5</span><span class="text-yellow-400 bg-yellow-500/10 rounded">40</span><span>50</span><span>63</span><span>80</span><span>100</span><span>125</span><span>160</span>
+                </div>
+
+                <!-- Pædagogisk Legend / Forklarings-liste under grafen -->
+                <div class="space-y-3 pt-2 text-xs border-t border-white/5">
+                    <div class="flex items-start space-x-2.5">
+                        <span class="flex-shrink-0 w-3 h-3 rounded-full bg-red-500 mt-0.5 shadow-[0_0_4px_rgba(239,68,68,0.5)]"></span>
+                        <div>
+                            <span class="font-bold text-red-400">43 Hz, 50 dB (Den reelle maskintone):</span>
+                            <span class="text-white/70"> Den reelle, intense maskintone, som borer sig ind i øret, og som fanges præcist af Hum Hunters smalbånds-FFT.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2.5">
+                        <span class="flex-shrink-0 w-3 h-3 rounded-full bg-yellow-500 mt-0.5"></span>
+                        <div>
+                            <span class="font-bold text-yellow-400">1/3 Oktavbånd ved 40 Hz (Den brede spand):</span>
+                            <span class="text-white/70"> Filteret opsuger energien, men fjerner fuldstændig "kamera-opløsningen". For myndighedernes software ser denne søjle ens ud, uanset om rummet har en harmløs baggrundssusen, eller om der gemmer sig en skarp, øredøvende tone på 43 Hz.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2.5">
+                        <span class="flex-shrink-0 w-3 h-3 rounded-full bg-green-600 mt-0.5"></span>
+                        <div>
+                            <span class="font-bold text-green-400">Samlet lavfrekvent støj A(LF) (Gennemsnits-fælden):</span>
+                            <span class="text-white/70"> Myndighedernes officielle filter dæmper pr. definition 40 Hz-området med hele <strong>-34,6 dB</strong>. Den reelle støj på 50 dB amputeres på papiret til kun <strong>15,4 dB</strong>, hvorfor sagen afvises, da den derved falder under grænseværdien på 20 dB.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opdateret YouTube knap -->
+                <div class="text-center pt-2">
+                    <a href="https://www.youtube.com/watch?v=Z327nyKE6T0" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 text-sky-300 hover:text-sky-200 font-semibold text-xs sm:text-sm transition-all bg-[#176B87]/50 hover:bg-[#176B87]/70 px-5 py-3 rounded-xl border border-white/10 shadow-md active:scale-95 text-center">
+                        <span>📺</span> <span>Alle kan høre støjen når den bliver høj nok. Prøv selv her</span>
                     </a>
                 </div>
             </div>
@@ -121,7 +187,7 @@
                 <em>"Alle A(LF)-værdierne ligger omkring 0 dB eller under... Målingerne ligger langt fra det niveau, hvor Miljøstyrelsens vejledende grænse på 20 dB A-vægtet lavfrekvent støj indendørs er overskredet... På baggrund af de gennemførte målinger meddeles afgørelse om Ikke-påbud til varmeværket."</em>
             </blockquote>
             <p class="text-white/80 leading-relaxed text-sm">
-                Denne type afgørelser udstiller det grundlæggende problem i den nuværende lovgivning: Myndighederne anvender brede gennemsnitsberegninger over hele frekvensbåndet (10–160 Hz). Hvis en borger er plaget af en intens og konstant brummetone på en specifik frekvens, forsvinder den fuldstændig i de officielle gennemsnitstal. 
+                Denne type afgørelser udstiller det grundlæggende problem i den nuværende lovgivning: Myndighederne anvender brede gennemsnitsberegninger over hele frekvensbåndet (10–160 Hz). Hvis een borger er plaget af en intens og konstant brummetone på en specifik frekvens, forsvinder den fuldstændig i de officielle gennemsnitstal. 
             </p>
             <p class="text-white/80 leading-relaxed text-sm">
                 Derfor er det afgørende at understøtte og udbygge uafhængige projekter som <span class="text-sky-300">humhunter.dk</span>, <span class="text-sky-300">plan-b-project.eu</span> samt akademisk forskning på <span class="text-sky-300">Zealand.dk</span>, så der kan lægges et sagligt pres mod en modernisering af de officielle målemetoder.
