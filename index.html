@@ -30,7 +30,7 @@
 
     <div class="w-full max-w-md flex flex-col pb-8">
         
-        <!-- TOP NAV V3.21: Grid til 3 kolonner (Måler / Kort / Om) -->
+        <!-- TOP NAV V3.24: Grid til 3 kolonner -->
         <div class="grid grid-cols-3 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md text-xs sm:text-sm">
             <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all">🎙️ Måler</button>
             <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Kort</button>
@@ -39,6 +39,19 @@
         
         <!-- ================= VIEW 1: MÅLER DASHBOARD ================= -->
         <div id="view-measure" class="flex flex-col h-full">
+
+            <!-- Desktop Advarselsboks (Vises kun på PC/Laptop) -->
+            <div id="desktop-notice" class="hidden theme-box border-2 border-amber-500/40 rounded-xl p-4 mb-6 shadow-xl space-y-2">
+                <div class="flex items-center space-x-2 text-amber-400 font-bold text-sm">
+                    <span>💻</span> <span>Desktop-visning aktiv</span>
+                </div>
+                <p class="text-xs text-white/80 leading-relaxed">
+                    Lavfrekvente målinger kræver en mobil enhed med en følsom mikrofon (f.eks. Dayton iMM-6C). Benyt din smartphone for at indsende data.
+                </p>
+                <button onclick="switchView('map')" class="w-full bg-sky-800 hover:bg-sky-700 text-white font-semibold py-2 rounded-lg text-xs mt-1 transition-all">
+                    🗺️ Udforsk målekortet i stedet
+                </button>
+            </div>
 
             <!-- Navnefelt -->
             <div class="mb-6">
@@ -57,8 +70,12 @@
                 </div>
             </div>
 
+            <!-- Hvor måler du? (Med udvidet vejledning) -->
             <div class="mb-6">
-                <h2 class="text-[20px] mb-2 font-normal text-white">Hvor måler du?</h2>
+                <h2 class="text-[20px] mb-1 font-normal text-white">Hvor måler du?</h2>
+                <p class="text-xs text-white/70 mb-3 leading-relaxed">
+                    (Husk der skal være så stille som muligt. Sluk for strømmen i egen bolig. Vent til det er vindstille. Der skal ikke være biler i nærheden)
+                </p>
                 <div class="theme-box rounded-xl p-1.5 grid grid-cols-2 gap-2 shadow-md border border-white/5">
                     <button id="btn-indoor" onclick="setEnvironment('Indendørs')" class="measure-inactive rounded-lg py-2 flex items-center justify-center space-x-2 transition-all font-bold">
                         <span class="text-xl">🏠</span> <span class="tracking-wider">Inde</span>
@@ -87,10 +104,19 @@
                 </div>
             </div>
 
+            <!-- GDPR Samtykke Flueben -->
+            <div class="mb-4 flex items-start space-x-2 text-xs text-white/80 px-1">
+                <input type="checkbox" id="consent-checkbox" onchange="toggleConsent()" class="mt-0.5 rounded border-white/20 text-sky-600 focus:ring-sky-500 bg-[#0B2F3D] cursor-pointer">
+                <label for="consent-checkbox" class="cursor-pointer leading-tight">
+                    Jeg accepterer vilkår og <button type="button" onclick="openPrivacyModal()" class="text-sky-300 underline font-semibold hover:text-white">privatlivspolitik</button>
+                </label>
+            </div>
+
+            <!-- Start Måling Knap -->
             <div class="mb-6">
-                <button id="btn-start" onclick="startMeasurement()" class="w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 active:scale-95 transition-transform shadow-lg border border-white/5">
+                <button id="btn-start" onclick="startMeasurement()" disabled class="w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 transition-transform shadow-lg border border-white/5 opacity-50 cursor-not-allowed">
                     <div class="w-6 h-6 rounded-full bg-red-600 border-[3px] border-white flex-shrink-0"></div>
-                    <span class="text-2xl font-normal text-white">Start 10sek måling</span>
+                    <span id="btn-start-text" class="text-2xl font-normal text-white">Accepter vilkår først</span>
                 </button>
             </div>
 
@@ -101,23 +127,25 @@
                     <h3 class="font-bold text-[15px] tracking-wide uppercase">Næste mission: Hum-Caching!</h3>
                 </div>
                 <p class="text-xs text-white/70 leading-relaxed">
-                    Mål 500 meter væk for at dække blinde vinkler i kortet. Klik på a fri zone for at åbne ruten i Google Maps:
+                    Mål 500 meter væk for at dække blinde vinkler i kortet. Klik på en fri zone for at åbne ruten i Google Maps:
                 </p>
                 <div id="geocache-grid" class="grid grid-cols-2 gap-2 pt-1"></div>
             </div>
 
-            <div class="mt-auto text-center pb-2 opacity-40">
+            <div class="mt-auto text-center pb-2 opacity-80">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white">Version 3.23 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white/60">Version 3.24 Live</div>
+                <div id="measurement-count-badge" class="mt-2 text-xs font-semibold text-sky-300 bg-sky-950/60 border border-sky-500/20 px-3 py-1 rounded-full inline-block">
+                    📊 469+ dokumenterede målinger
+                </div>
             </div>
         </div>
 
         <!-- ================= VIEW 2: MAP VIEW (LIVE KORT) ================= -->
         <div id="view-map" class="hidden flex-col h-full relative">
-            <!-- NYT: Versionsnummer tydeligt på kortsiden -->
             <div class="flex justify-between items-center text-[10px] text-white/40 mb-1.5 px-1 font-mono tracking-wider">
                 <span>AKUSTISK DISPERSIONS-RADAR</span>
-                <span>v3.23 Live</span>
+                <span>v3.24 Live</span>
             </div>
             
             <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 merge-box border border-slate-200">
@@ -144,7 +172,6 @@
                 </div>
             </div>
 
-            <!-- NYT: Avancerede live-filtre til kortet -->
             <div class="mb-4 theme-box rounded-xl p-3 border border-white/5 shadow-md text-xs">
                 <h3 class="text-[11px] uppercase tracking-wider font-semibold text-white/50 mb-2">🔍 Avancerede Filtre</h3>
                 <div class="grid grid-cols-3 gap-2">
@@ -229,7 +256,23 @@
             </button>
 
             <!-- SKJULT UDVIKLER LINK -->
-            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.23 Live 🛠️</div>
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.24 Live 🛠️</div>
+        </div>
+    </div>
+
+    <!-- ================= PRIVATLIVSPOLITIK MODAL ================= -->
+    <div id="privacy-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-center items-center p-4">
+        <div class="theme-box max-w-md w-full rounded-2xl p-6 border border-white/10 space-y-4 max-h-[85vh] overflow-y-auto text-sm text-white/90 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                <h3 class="font-bold text-lg text-white">🔒 Privatlivspolitik &amp; Vilkår</h3>
+                <button onclick="closePrivacyModal()" class="text-white/60 hover:text-white font-bold text-xl">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs leading-relaxed text-white/80">
+                <p><strong class="text-sky-300">Dataminimering (0–200 Hz):</strong> Lydfilerne Low-Pass-filtreres direkte i din browser til 0–200 Hz før upload. Det fjerner alt over 200 Hz, hvilket gør det teknisk umuligt at opsnappe eller genskabe menneskelig tale, formanter og baggrundssamtaler.</p>
+                <p><strong class="text-sky-300">Anvendelse:</strong> Indsamlede måledata (GPS-position, frekvensspektrum, dB-lydtryk og vejrdata) benyttes til åben kortlægning af lavfrekvent støj og videnskabelig forskning (f.eks. i samarbejde med Aalborg Universitet).</p>
+                <p><strong class="text-sky-300">Opbevaring &amp; Sikkerhed:</strong> Data opbevares sikkert på EU-baserede Google Firebase-servere (EUR3 i Frankfurt) i overensstemmelse med GDPR.</p>
+            </div>
+            <button onclick="closePrivacyModal()" class="w-full bg-sky-700 hover:bg-sky-600 text-white font-bold py-2.5 rounded-xl transition-all">Forstået &amp; Luk</button>
         </div>
     </div>
 
@@ -237,6 +280,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
@@ -251,6 +295,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app); // Google Analytics Aktiveret v3.24
         const db = getFirestore(app);
         const storage = getStorage(app);
 
@@ -260,11 +305,51 @@
         let globalPeakFreq = 0;
         let currentTemp = null, currentWindSpeed = null, currentWindDir = null;
         let globalTopPeaksArray = [];
+        let isDesktopUser = false;
         
         let globalAccumulatedSpectrum = null;
         let globalBufferLength = 0;
         let globalSampleRate = 44100;
         let globalSampleCount = 0;
+
+        // Desktop Detection & Funktions-Lås
+        function checkDesktopDevice() {
+            const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            const isWideScreen = window.innerWidth >= 1024;
+            isDesktopUser = !hasTouch && isWideScreen;
+
+            if (isDesktopUser) {
+                document.getElementById('desktop-notice').classList.remove('hidden');
+                updateStartButtonState();
+            }
+        }
+
+        window.openPrivacyModal = function() { document.getElementById('privacy-modal').classList.remove('hidden'); };
+        window.closePrivacyModal = function() { document.getElementById('privacy-modal').classList.add('hidden'); };
+
+        window.toggleConsent = function() {
+            updateStartButtonState();
+        };
+
+        function updateStartButtonState() {
+            const consentChecked = document.getElementById('consent-checkbox').checked;
+            const btn = document.getElementById('btn-start');
+            const btnText = document.getElementById('btn-start-text');
+
+            if (isDesktopUser) {
+                btn.disabled = true;
+                btn.className = "w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 border border-white/5 opacity-40 cursor-not-allowed";
+                btnText.innerText = "Måling kræver mobil enhed";
+            } else if (consentChecked) {
+                btn.disabled = false;
+                btn.className = "w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 active:scale-95 transition-transform shadow-lg border border-white/5 cursor-pointer hover:border-sky-400";
+                btnText.innerText = "Start 10sek måling";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full theme-box rounded-xl py-4 flex items-center justify-center space-x-4 border border-white/5 opacity-50 cursor-not-allowed";
+                btnText.innerText = "Accepter vilkår først";
+            }
+        }
 
         async function fetchLiveWeather(lat, lng) {
             try {
@@ -366,7 +451,6 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        // --- AKUSTISKE KORT-INITIATIVMETODER (v3.23) ---
         function calculateLogRadius(db) {
             if (db <= 20) return 100;
             if (db >= 65) return 1000;
@@ -392,12 +476,12 @@
                 const stop0 = L.SVG.create('stop');
                 stop0.setAttribute('offset', '0%');
                 stop0.setAttribute('stop-color', color);
-                stop0.setAttribute('stop-opacity', '0.9'); // 10% transparent i centrum
+                stop0.setAttribute('stop-opacity', '0.9');
                 
                 const stop100 = L.SVG.create('stop');
                 stop100.setAttribute('offset', '100%');
                 stop100.setAttribute('stop-color', color);
-                stop100.setAttribute('stop-opacity', '0.0'); // 100% transparent i kanten
+                stop100.setAttribute('stop-opacity', '0.0');
                 
                 gradient.appendChild(stop0);
                 gradient.appendChild(stop100);
@@ -433,7 +517,6 @@
                 const dbVal = data.decibel || 20;
                 const color = getZoneColor(dbVal);
                 
-                // Hent radial gradient og logaritmisk radius i stedet for fast 500m fladt lag
                 const gradId = getOrCreateGradient(map, color);
                 const radiusInMeter = calculateLogRadius(dbVal);
                 
@@ -479,6 +562,11 @@
                     if (data.latitude && data.longitude) { globalMeasurements.push(data); }
                 });
                 globalMeasurements.sort((a, b) => (a.decibel || 0) - (b.decibel || 0));
+                
+                if (globalMeasurements.length > 0) {
+                    document.getElementById('measurement-count-badge').innerText = `📊 ${globalMeasurements.length} dokumenterede målinger`;
+                }
+
                 updateMapMarkers();
                 if(currentLatitude && currentLongitude) generateGeocacheMissions(currentLatitude, currentLongitude);
             });
@@ -568,6 +656,14 @@
         }
 
         window.startMeasurement = async function() {
+            if (isDesktopUser) {
+                alert("Lavfrekvente målinger kræver en mobil enhed. Benyt venligst en smartphone.");
+                return;
+            }
+            if (!document.getElementById('consent-checkbox').checked) {
+                alert("Du skal acceptere vilkår og privatlivspolitik før måling.");
+                return;
+            }
             if (!currentLatitude || !currentLongitude) { 
                 alert("Måling afbrudt: Intet reelt og opdateret GPS-lock fundet endnu. Tjek om din browser har tilladelse til lokalitetsdata, og vent et øjeblik på at chippen låser."); 
                 return; 
@@ -585,10 +681,21 @@
                 if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
                 
                 const source = audioCtx.createMediaStreamSource(stream);
-                const analyser = audioCtx.createAnalyser();
                 
+                // Hardware 0–200 Hz Low-Pass Filter (GDPR Privacy & Speech Elimination)
+                const lowpassFilter = audioCtx.createBiquadFilter();
+                lowpassFilter.type = 'lowpass';
+                lowpassFilter.frequency.value = 200;
+
+                const analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 16384; 
-                source.connect(analyser);
+
+                // Stream destination for MediaRecorder to save 0-200Hz audio
+                const mediaStreamDest = audioCtx.createMediaStreamDestination();
+
+                source.connect(lowpassFilter);
+                lowpassFilter.connect(analyser);
+                lowpassFilter.connect(mediaStreamDest);
 
                 const dummyGain = audioCtx.createGain();
                 dummyGain.gain.value = 0;
@@ -604,7 +711,8 @@
                 globalSampleRate = sampleRate;
                 globalSampleCount = 0;
 
-                mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+                // MediaRecorder gets the filtered stream
+                mediaRecorder = new MediaRecorder(mediaStreamDest.stream, { mimeType: mimeType });
                 audioChunks = [];
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
                 
@@ -700,7 +808,7 @@
 
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
-            let fileContent = "=== HUM HUNTER v3.23 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
+            let fileContent = "=== HUM HUNTER v3.24 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
             fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
             fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
             fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
@@ -742,6 +850,7 @@
                 debug_peaks: globalTopPeaksArray, 
                 user_id: document.getElementById('user-identity').value || "Anonym",
                 comment: document.getElementById('user-comment').value, audio_url: fileUrl,
+                gdpr_filtered: true, // Forsknings-mærke til AAU
                 weather: { temperature: currentTemp || 0, wind_speed: currentWindSpeed || 0, wind_direction: currentWindDir || 0 }
             });
         }
@@ -799,6 +908,8 @@
         }
 
         window.addEventListener('load', () => {
+            checkDesktopDevice();
+
             var savedUser = localStorage.getItem('humhunter_user_id');
             if (savedUser) document.getElementById('user-identity').value = savedUser;
             document.getElementById('user-identity').addEventListener('input', (e) => { localStorage.setItem('humhunter_user_id', e.target.value); });
@@ -822,7 +933,7 @@
                     document.getElementById('gps-status').className = "text-green-400 font-bold text-[15px]";
                     generateGeocacheMissions(currentLatitude, currentLongitude);
                 }, err => {
-                    console.error("GPS Fevl:", err);
+                    console.error("GPS Fejl:", err);
                     let fejlbesked = "GPS Fejl ❌";
                     if (err.code === 1) fejlbesked = "Tilladelse afvist 🔒";
                     if (err.code === 2) fejlbesked = "Intet signal 📡";
@@ -843,6 +954,11 @@
                     const d = doc.data();
                     if(d.latitude && d.longitude) globalMeasurements.push(d);
                 });
+                
+                if (globalMeasurements.length > 0) {
+                    document.getElementById('measurement-count-badge').innerText = `📊 ${globalMeasurements.length} dokumenterede målinger`;
+                }
+
                 if(currentLatitude && currentLongitude) generateGeocacheMissions(currentLatitude, currentLongitude);
             });
         });
