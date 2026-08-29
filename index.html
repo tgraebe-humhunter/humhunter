@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hum Hunter - Støjdetektiv</title>
+    <title>Hum Hunter - Støjdetektiv v4.00</title>
     <meta name="description" content="Hum Hunter er en borgerdrevet støjdetektiv-app til at måle og kortlægge lavfrekvent støj og brummen i Odsherred og omegn.">
     <meta name="keywords" content="lavfrekvent støj, brummen, Odsherred, støjmåling, Hum Hunter, støjdetektiv, infralyd">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,7 +30,7 @@
 
     <div class="w-full max-w-md flex flex-col pb-8">
         
-        <!-- TOP NAV V3.24: Grid til 3 kolonner -->
+        <!-- TOP NAV V4.00: Grid til 3 kolonner -->
         <div class="grid grid-cols-3 gap-2 theme-box p-1.5 rounded-xl mb-6 text-center font-medium border border-white/5 shadow-md text-xs sm:text-sm">
             <button id="tab-measure" onclick="switchView('measure')" class="bg-[#176B87] py-2 rounded-lg font-bold text-white transition-all">🎙️ Måler</button>
             <button id="tab-map" onclick="switchView('map')" class="text-white/60 py-2 rounded-lg transition-all hover:text-white">🗺️ Kort</button>
@@ -134,9 +134,9 @@
 
             <div class="mt-auto text-center pb-2 opacity-80">
                 <h1 class="text-3xl font-light tracking-wide text-white">Hum Hunter</h1>
-                <div class="text-[13px] font-medium mt-1 text-white/60">Version 3.24 Live</div>
+                <div class="text-[13px] font-medium mt-1 text-white/60">Version 4.00 Live</div>
                 <div id="measurement-count-badge" class="mt-2 text-xs font-semibold text-sky-300 bg-sky-950/60 border border-sky-500/20 px-3 py-1 rounded-full inline-block">
-                    📊 469+ dokumenterede målinger
+                    📊 Indlæser målinger...
                 </div>
             </div>
         </div>
@@ -145,13 +145,13 @@
         <div id="view-map" class="hidden flex-col h-full relative">
             <div class="flex justify-between items-center text-[10px] text-white/40 mb-1.5 px-1 font-mono tracking-wider">
                 <span>AKUSTISK DISPERSIONS-RADAR</span>
-                <span>v3.24 Live</span>
+                <span>v4.00 Live</span>
             </div>
             
             <div class="bg-white text-slate-800 rounded-xl p-3.5 shadow-xl text-xs space-y-2.5 mb-4 z-10 merge-box border border-slate-200">
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-[14px]">Hum-Frekvens Lydtryk, L_p(Z)</span>
-                    <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold text-[10px]">40-55 Hz Isoleret</span>
+                    <span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold text-[10px]">40-60 Hz Isoleret</span>
                 </div>
                 <div class="flex flex-wrap gap-1 pt-1 font-mono text-[10px] font-bold text-white">
                     <span class="bg-[#0c4a6e] px-1 py-0.5 rounded">&lt; 25 dB</span>
@@ -189,8 +189,8 @@
                         <select id="filter-frequency" onchange="updateMapMarkers()" class="w-full bg-[#176B87]/30 text-white rounded-lg p-1.5 text-[11px] focus:outline-none border border-white/5 font-medium">
                             <option value="all" class="bg-[#0B2F3D]">Alle</option>
                             <option value="43" class="bg-[#0B2F3D]">43 Hz</option>
-                            <option value="44" class="bg-[#0B2F3D]">44 Hz</option>
-                            <option value="45" class="bg-[#0B2F3D]">45 Hz</option>
+                            <option value="47" class="bg-[#0B2F3D]">47 Hz</option>
+                            <option value="50" class="bg-[#0B2F3D]">50 Hz</option>
                         </select>
                     </div>
                     <div>
@@ -214,7 +214,7 @@
 
         <!-- ================= VIEW 2: RECORDING SCREEN ================= -->
         <div id="screen-2" class="hidden flex-col justify-center items-center h-full text-center space-y-8 mt-16 px-4">
-            <h2 class="text-[22px] font-normal leading-relaxed text-white/90">Tak for dit bidrag til målingerne.<br><span class="text-sky-300 font-medium">Isolerer og lytter i 40-55Hz hum-båndet...</span></h2>
+            <h2 class="text-[22px] font-normal leading-relaxed text-white/90">Tak for dit bidrag til målingerne.<br><span class="text-sky-300 font-medium">Isolerer og lytter i 40-60Hz hum-båndet...</span></h2>
             <div class="text-9xl font-bold text-white animate-pulse my-4" id="countdown">10</div>
             <div id="live-db-preview" class="text-3xl font-bold text-green-400 font-mono tracking-wide bg-black/30 px-6 py-3 rounded-xl border border-white/5">0.0 dB Lp(Z)</div>
         </div>
@@ -223,7 +223,7 @@
         <div id="screen-3" class="hidden flex-col h-full pt-4">
             <div class="theme-box rounded-xl p-5 mb-4 text-sm space-y-3 shadow-md border border-white/5 mt-4">
                 <div class="flex justify-between border-b border-white/10 pb-2">
-                    <span class="text-white font-normal text-base">Isoleret Hum-Lydtryk (40-55Hz):</span>
+                    <span class="text-white font-normal text-base">Isoleret Hum-Lydtryk (40-60Hz):</span>
                     <span id="display-db" class="font-bold text-green-400 text-lg">0.0 dB Lp(Z)</span>
                 </div>
                 <div class="flex justify-between border-b border-white/10 pb-2 pt-0.5">
@@ -238,15 +238,15 @@
 
             <!-- Diagnostisk Panel -->
             <div id="debug-panel" class="theme-box rounded-xl p-4 mb-4 border border-sky-500/30 text-xs space-y-2 shadow-inner">
-                <h4 class="font-bold text-white uppercase tracking-wider flex items-center space-x-1"><span>🔬 Hum-Isolator: Top Frekvenser (40-55 <span class="text-blue-400 lowercase">Hz</span>)</span></h4>
+                <h4 class="font-bold text-white uppercase tracking-wider flex items-center space-x-1"><span>🔬 Hum-Isolator: Top Frekvenser (40-60 <span class="text-blue-400 lowercase">Hz</span>)</span></h4>
                 <div id="debug-peaks-list" class="font-mono space-y-1 text-white/80 divide-y divide-white/5 pt-1">
                     <div class="py-1 text-white">Afventer måledata...</div>
                 </div>
             </div>
 
-            <!-- Spektrum Grafboks -->
+            <!-- Spektrum Grafboks Med Akser -->
             <div class="theme-box rounded-xl p-4 mb-4 border border-white/10 shadow-md flex flex-col items-center">
-                <canvas id="spectrum-canvas" class="w-full h-36 bg-black/40 rounded-lg"></canvas>
+                <canvas id="spectrum-canvas" class="w-full h-44 bg-black/40 rounded-lg"></canvas>
             </div>
 
             <textarea id="user-comment" placeholder="Tilføj observation (f.eks. 'Høres tydeligt på vejen lige nu')...." class="w-full theme-box rounded-xl p-4 text-white h-22 mb-4 text-sm focus:outline-none placeholder:text-white/30 border border-white/5"></textarea>
@@ -256,7 +256,7 @@
             </button>
 
             <!-- SKJULT UDVIKLER LINK -->
-            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v3.24 Live 🛠️</div>
+            <div id="dev-dump-trigger" onclick="downloadDevDump()" class="text-center pt-4 opacity-25 text-xs font-mono text-white cursor-pointer hover:opacity-100 hover:text-sky-400 transition-all select-none">Hum Hunter v4.00 Live 🛠️</div>
         </div>
     </div>
 
@@ -269,7 +269,7 @@
             </div>
             <div class="space-y-3 text-xs leading-relaxed text-white/80">
                 <p><strong class="text-sky-300">Dataminimering (0–200 Hz):</strong> Lydfilerne Low-Pass-filtreres direkte i din browser til 0–200 Hz før upload. Det fjerner alt over 200 Hz, hvilket gør det teknisk umuligt at opsnappe eller genskabe menneskelig tale, formanter og baggrundssamtaler.</p>
-                <p><strong class="text-sky-300">Anvendelse:</strong> Indsamlede måledata (GPS-position, frekvensspektrum, dB-lydtryk og vejrdata) benyttes til åben kortlægning af lavfrekvent støj og videnskabelig forskning (f.eks. i samarbejde med Aalborg Universitet).</p>
+                <p><strong class="text-sky-300">Anvendelse:</strong> Indsamlede måledata (GPS-position, frekvensspektrum, dB-lydtryk og vejrdata) benyttes til åben kortlægning af lavfrekvent støj og videnskabelig forskning.</p>
                 <p><strong class="text-sky-300">Opbevaring &amp; Sikkerhed:</strong> Data opbevares sikkert på EU-baserede Google Firebase-servere (EUR3 i Frankfurt) i overensstemmelse med GDPR.</p>
             </div>
             <button onclick="closePrivacyModal()" class="w-full bg-sky-700 hover:bg-sky-600 text-white font-bold py-2.5 rounded-xl transition-all">Forstået &amp; Luk</button>
@@ -295,7 +295,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app); // Google Analytics Aktiveret v3.24
+        const analytics = getAnalytics(app); 
         const db = getFirestore(app);
         const storage = getStorage(app);
 
@@ -312,7 +312,6 @@
         let globalSampleRate = 44100;
         let globalSampleCount = 0;
 
-        // Desktop Detection & Funktions-Lås
         function checkDesktopDevice() {
             const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
             const isWideScreen = window.innerWidth >= 1024;
@@ -572,6 +571,7 @@
             });
         }
 
+        // V4.00 REVIDERET VISUALISERING MED TYDELIGE Y- OG X-AKSER
         function drawSpectrumVisual(cumulativeSpectrum, bufferLength, sampleRate, sampleCount) {
             const canvas = document.getElementById('spectrum-canvas');
             if(!canvas) return;
@@ -582,8 +582,13 @@
             canvas.height = canvas.clientHeight * dpr;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const axisPadding = 24 * dpr;
-            const graphHeight = canvas.height - axisPadding;
+            const paddingLeft = 42 * dpr;
+            const paddingBottom = 24 * dpr;
+            const paddingTop = 12 * dpr;
+            const paddingRight = 12 * dpr;
+
+            const graphWidth = canvas.width - paddingLeft - paddingRight;
+            const graphHeight = canvas.height - paddingTop - paddingBottom;
             
             let points = [];
             let maxMeasuredDb = -1000;
@@ -591,11 +596,12 @@
 
             for(let i = 1; i < bufferLength; i++) {
                 const freq = i * sampleRate / 16384; 
-                if(freq >= 40 && freq <= 55) {
+                if(freq >= 40 && freq <= 60) {
                     const avgDbFS = cumulativeSpectrum[i] / (sampleCount || 1);
                     
+                    // Ren ufiltreret dB-skala (uden kunstigt 43 Hz boost eller 65 dB mætningsloft)
                     let binDb = Math.round(avgDbFS + 138);
-                    if (freq >= 42 && freq <= 44) binDb += 5; 
+                    binDb = Math.max(0, binDb); // Ingen negativ bund, uendelig top
                     
                     if (binDb > maxMeasuredDb) maxMeasuredDb = binDb;
                     if (binDb < minMeasuredDb) minMeasuredDb = binDb;
@@ -605,15 +611,37 @@
             }
             
             if(points.length === 0) return;
-            const barWidth = canvas.width / points.length;
+            const barWidth = graphWidth / points.length;
             
-            if (maxMeasuredDb === minMeasuredDb) minMeasuredDb = maxMeasuredDb - 10;
-            let paddingBottom = 4; 
-            let graphMin = Math.max(0, minMeasuredDb - paddingBottom);
-            let graphMax = maxMeasuredDb + 2;
+            if (maxMeasuredDb === minMeasuredDb) minMeasuredDb = Math.max(0, maxMeasuredDb - 10);
+            let graphMin = Math.max(0, minMeasuredDb - 5);
+            let graphMax = maxMeasuredDb + 5;
             let heightRange = graphMax - graphMin;
+            if (heightRange === 0) heightRange = 10;
             
-            const gradient = ctx.createLinearGradient(0, graphHeight, 0, 0);
+            // Tegn baggrunds-grid og Y-akse (dB) labels
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1 * dpr;
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = Math.round(9 * dpr) + 'px -apple-system, BlinkMacSystemFont, monospace';
+            ctx.textAlign = 'right';
+
+            const ySteps = 4;
+            for(let step = 0; step <= ySteps; step++) {
+                const ratio = step / ySteps;
+                const yVal = Math.round(graphMin + ratio * heightRange);
+                const yPos = paddingTop + graphHeight - (ratio * graphHeight);
+                
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yPos);
+                ctx.lineTo(canvas.width - paddingRight, yPos);
+                ctx.stroke();
+
+                ctx.fillText(yVal + ' dB', paddingLeft - 4 * dpr, yPos + 3 * dpr);
+            }
+
+            // Tegn frekvensbjælker
+            const gradient = ctx.createLinearGradient(0, paddingTop + graphHeight, 0, paddingTop);
             gradient.addColorStop(0.0, '#0c4a6e');   
             gradient.addColorStop(0.35, '#22c55e');  
             gradient.addColorStop(0.65, '#eab308');  
@@ -622,36 +650,36 @@
             
             points.forEach((pt, index) => {
                 const finalHeight = ((pt.db - graphMin) / heightRange) * graphHeight;
-                const x = index * barWidth;
-                const y = graphHeight - Math.max(3, finalHeight);
+                const x = paddingLeft + (index * barWidth);
+                const y = paddingTop + graphHeight - Math.max(2, finalHeight);
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(x, y, barWidth - 0.5, Math.max(3, finalHeight));
+                ctx.fillRect(x, y, Math.max(1, barWidth - 0.5), Math.max(2, finalHeight));
             });
             
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-            ctx.lineWidth = 1 * dpr;
+            // X-akse bundlinje
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
             ctx.beginPath();
-            ctx.moveTo(0, graphHeight);
-            ctx.lineTo(canvas.width, graphHeight);
+            ctx.moveTo(paddingLeft, paddingTop + graphHeight);
+            ctx.lineTo(canvas.width - paddingRight, paddingTop + graphHeight);
             ctx.stroke();
             
-            ctx.fillStyle = 'rgba(255,255,255,0.6)';
-            ctx.font = Math.round(10 * dpr) + 'px -apple-system, BlinkMacSystemFont, monospace';
+            // X-akse frekvens-labels (Hz)
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
             ctx.textAlign = 'center';
             
-            const targetFreqs = [40, 43, 45, 48, 50, 53, 55];
+            const targetFreqs = [40, 44, 47, 50, 53, 56, 60];
             targetFreqs.forEach(f => {
-                const pct = (f - 40) / (55 - 40);
-                const x = pct * canvas.width;
+                const pct = (f - 40) / (60 - 40);
+                const x = paddingLeft + (pct * graphWidth);
                 
-                ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
                 ctx.beginPath();
-                ctx.moveTo(x, graphHeight);
-                ctx.lineTo(x, graphHeight + 4 * dpr);
+                ctx.moveTo(x, paddingTop + graphHeight);
+                ctx.lineTo(x, paddingTop + graphHeight + 4 * dpr);
                 ctx.stroke();
                 
-                ctx.fillText(f + 'Hz', x, graphHeight + 15 * dpr);
+                ctx.fillText(f + 'Hz', x, paddingTop + graphHeight + 15 * dpr);
             });
         }
 
@@ -690,7 +718,6 @@
                 const analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 16384; 
 
-                // Stream destination for MediaRecorder to save 0-200Hz audio
                 const mediaStreamDest = audioCtx.createMediaStreamDestination();
 
                 source.connect(lowpassFilter);
@@ -711,7 +738,6 @@
                 globalSampleRate = sampleRate;
                 globalSampleCount = 0;
 
-                // MediaRecorder gets the filtered stream
                 mediaRecorder = new MediaRecorder(mediaStreamDest.stream, { mimeType: mimeType });
                 audioChunks = [];
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
@@ -723,15 +749,17 @@
                     let totalDbSum = 0;
                     let totalBinsCount = 0;
                     
+                    // V4.00 FFT-ANALYSE: 40-60 Hz område uden kunstigt boost eller 65 dB loft
                     for(let i=1; i<bufferLength; i++) {
                         const freq = i * sampleRate / analyser.fftSize;
-                        if(freq >= 40 && freq <= 55) {
+                        if(freq >= 40 && freq <= 60) {
                             const avgDbFS = globalAccumulatedSpectrum[i] / (globalSampleCount || 1);
                             
+                            // Ren konvertering uden kunstigt 43 Hz boost (+4 dB fjernet)
                             let freqDb = Math.round(avgDbFS + 138);
-                            if (freq >= 42 && freq <= 44) freqDb += 4; 
                             
-                            const finalDb = Math.max(15, Math.min(65, freqDb));
+                            // Dynamisk ubegrænset skala (65 dB loft fjernet)
+                            const finalDb = Math.max(0, freqDb);
                             rawList.push({ freq: Math.round(freq), db: finalDb });
                             
                             totalDbSum += finalDb;
@@ -739,6 +767,7 @@
                         }
                     }
                     
+                    // Ren objektiv sortering: Største ufiltrerede dB-peaks øverst
                     rawList.sort((a,b) => b.db - a.db);
                     
                     globalTopPeaksArray = [];
@@ -792,13 +821,13 @@
                     for(let i=1; i<bufferLength; i++) {
                         globalAccumulatedSpectrum[i] += dataArray[i];
                         const freq = i * sampleRate / analyser.fftSize;
-                        if(freq >= 40 && freq <= 55) { 
+                        if(freq >= 40 && freq <= 60) { 
                             intervalSum += dataArray[i]; lfBins++; 
                         }
                     }
                     if(lfBins > 0) {
                         const avg = intervalSum / lfBins; globalSampleCount++;
-                        const currentLiveDb = Math.round(avg + 138);
+                        const currentLiveDb = Math.max(0, Math.round(avg + 138));
                         document.getElementById('live-db-preview').innerText = `${currentLiveDb.toFixed(1)} dB Lp(Z)`;
                     }
                     if (timeLeft <= 0) { clearInterval(interval); mediaRecorder.stop(); stream.getTracks().forEach(t => t.stop()); }
@@ -808,7 +837,7 @@
 
         window.downloadDevDump = function() {
             if (!globalAccumulatedSpectrum || globalSampleCount === 0) { alert("Foretag venligst en måling først."); return; }
-            let fileContent = "=== HUM HUNTER v3.24 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
+            let fileContent = "=== HUM HUNTER v4.00 Live - RÅ AUDIO SPEKTRUM DUMP ===\n";
             fileContent += "Dato: " + new Date().toLocaleString('da-DK') + "\n";
             fileContent += "Udstyr: " + selectedEquipment + " / Dayton iMM-6 Mode\n";
             fileContent += "Akkumulerede målinger: " + globalSampleCount + " sekunder\n";
@@ -850,7 +879,7 @@
                 debug_peaks: globalTopPeaksArray, 
                 user_id: document.getElementById('user-identity').value || "Anonym",
                 comment: document.getElementById('user-comment').value, audio_url: fileUrl,
-                gdpr_filtered: true, // Forsknings-mærke til AAU
+                gdpr_filtered: true,
                 weather: { temperature: currentTemp || 0, wind_speed: currentWindSpeed || 0, wind_direction: currentWindDir || 0 }
             });
         }
